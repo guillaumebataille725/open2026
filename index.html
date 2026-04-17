@@ -576,7 +576,7 @@ tbody td:not(:first-child):not(:nth-child(2)) { text-align: center; color: var(-
 </main>
 
 <script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxdjzwZ41g_8wwPPQhCCdIVt7pD8uW6B2-HRCcmctIAiwqc820FFghVq-Fpm3_wBK6T/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzvhH5gK8z5GAxXHHbHoqwOBdMr2Yxjka8rwlia-gIl0lRgtfTOefkzEbaZN9NGDy61/exec';
 
 const cache = {};
 let activeSection = 'calendrier';
@@ -585,7 +585,7 @@ let activeDay = 'all';
 
 const SECTIONS = [
   { id: 'calendrier',  label: '📅 Calendrier' },
-  { id: 'poules',      label: '🏀 Participants & Poules' },
+  { id: 'poules',      label: 'Participants & Poules' },
   { id: 'classements', label: 'Phase 1' },
   { id: 'phase2',      label: 'Phase 2' },
   { id: 'phasefinale', label: '🏆 Finales' },
@@ -824,80 +824,104 @@ async function renderPoules(force=false) {
     const equipesCompet = data.equipesCompet || [];
     const equipesLoisir = data.equipesLoisir || [];
 
-    let html = '';
+    // Filtre actif : null = tout afficher, 'compet' ou 'loisir'
+    let activeFilter = el.dataset.filter || null;
+    const hasCompet = Object.keys(compet).length > 0 || equipesCompet.length > 0;
+    const hasLoisir = Object.keys(loisir).length > 0 || equipesLoisir.length > 0;
 
-    // ── Poules COMPET ──
-    if (Object.keys(compet).length) {
-      html += `<div class="section-head"><h2><span style="color:var(--yellow)">⚡</span> Catégorie COMPET</h2></div>`;
-      html += '<div class="poules-grid">';
-      let d = 0;
-      for (const [nom, equipes] of Object.entries(compet)) {
-        d++;
-        html += `<div class="poule-card" style="animation-delay:${d*.05}s">
-          <div class="poule-card-header">
-            <h3>${nom}</h3>
-            <span class="poule-count">${equipes.length} équipes</span>
-          </div>
-          <ul>${equipes.map((e,i) => `<li><span class="team-num">${i+1}</span>${e}</li>`).join('')}</ul>
-        </div>`;
+    function renderContent() {
+      const showCompet = !activeFilter || activeFilter === 'compet';
+      const showLoisir = !activeFilter || activeFilter === 'loisir';
+
+      // Barre de filtres
+      let html = `<div class="filter-bar" style="margin-bottom:1.75rem">
+        ${hasCompet ? `<button class="filter-chip ${activeFilter==='compet'?'active':''}" onclick="setPouleFilter('compet')">COMPET</button>` : ''}
+        ${hasLoisir ? `<button class="filter-chip ${activeFilter==='loisir'?'active':''}" onclick="setPouleFilter('loisir')">LOISIR</button>` : ''}
+      </div>`;
+
+      // ── Poules COMPET ──
+      if (showCompet && Object.keys(compet).length) {
+        html += `<div class="section-head"><h2><span style="color:var(--blue)">COMPET</span></h2></div>`;
+        html += '<div class="poules-grid">';
+        let d = 0;
+        for (const [nom, equipes] of Object.entries(compet)) {
+          d++;
+          html += `<div class="poule-card" style="animation-delay:${d*.05}s">
+            <div class="poule-card-header">
+              <h3>${nom}</h3>
+              <span class="poule-count">${equipes.length} équipes</span>
+            </div>
+            <ul>${equipes.map((e,i) => `<li><span class="team-num">${i+1}</span>${e}</li>`).join('')}</ul>
+          </div>`;
+        }
+        html += '</div>';
       }
-      html += '</div>';
-    }
 
-    // ── Équipes COMPET avec joueurs ──
-    if (equipesCompet.length) {
-      html += `<div class="section-head" style="margin-top:2.5rem"><h2 style="font-size:1.3rem;color:var(--muted2)">Composition des équipes COMPET</h2></div>`;
-      html += '<div class="equipes-grid">';
-      equipesCompet.forEach((eq, i) => {
-        html += `<div class="equipe-card" style="animation-delay:${i*.03}s">
-          <div class="equipe-header"><span class="equipe-nom">${eq.nom}</span></div>
-          <div class="equipe-joueurs">
-            ${eq.joueurs.length
-              ? eq.joueurs.map(j => `<span class="joueur-tag">${j}</span>`).join('')
-              : '<span style="color:var(--muted);font-size:.78rem">Aucun joueur renseigné</span>'}
-          </div>
-        </div>`;
-      });
-      html += '</div>';
-    }
-
-    // ── Poules LOISIR ──
-    if (Object.keys(loisir).length) {
-      html += `<div class="section-head" style="margin-top:2.5rem"><h2><span style="color:var(--blue)">🎯</span> Catégorie LOISIR</h2></div>`;
-      html += '<div class="poules-grid">';
-      let d = 0;
-      for (const [nom, equipes] of Object.entries(loisir)) {
-        d++;
-        html += `<div class="poule-card" style="animation-delay:${d*.05}s">
-          <div class="poule-card-header" style="background:linear-gradient(135deg,#0d1a2a,#111827)">
-            <h3 style="color:var(--blue)">${nom}</h3>
-            <span class="poule-count">${equipes.length} équipes</span>
-          </div>
-          <ul>${equipes.map((e,i) => `<li><span class="team-num">${i+1}</span>${e}</li>`).join('')}</ul>
-        </div>`;
+      // ── Équipes COMPET avec joueurs ──
+      if (showCompet && equipesCompet.length) {
+        html += `<div class="section-head" style="margin-top:2.5rem"><h2 style="font-size:1.3rem;color:var(--muted2)">Composition des équipes COMPET</h2></div>`;
+        html += '<div class="equipes-grid">';
+        equipesCompet.forEach((eq, i) => {
+          html += `<div class="equipe-card" style="animation-delay:${i*.03}s">
+            <div class="equipe-header"><span class="equipe-nom">${eq.nom}</span></div>
+            <div class="equipe-joueurs">
+              ${eq.joueurs.length
+                ? eq.joueurs.map(j => `<span class="joueur-tag">${j}</span>`).join('')
+                : '<span style="color:var(--muted);font-size:.78rem">Aucun joueur renseigné</span>'}
+            </div>
+          </div>`;
+        });
+        html += '</div>';
       }
-      html += '</div>';
+
+      // ── Poules LOISIR ──
+      if (showLoisir && Object.keys(loisir).length) {
+        const mt = showCompet ? 'margin-top:2.5rem' : '';
+        html += `<div class="section-head" style="${mt}"><h2><span style="color:var(--yellow)">LOISIR</span></h2></div>`;
+        html += '<div class="poules-grid">';
+        let d = 0;
+        for (const [nom, equipes] of Object.entries(loisir)) {
+          d++;
+          html += `<div class="poule-card" style="animation-delay:${d*.05}s">
+            <div class="poule-card-header" style="background:linear-gradient(135deg,#0d1a2a,#111827)">
+              <h3 style="color:var(--yellow)">${nom}</h3>
+              <span class="poule-count">${equipes.length} équipes</span>
+            </div>
+            <ul>${equipes.map((e,i) => `<li><span class="team-num">${i+1}</span>${e}</li>`).join('')}</ul>
+          </div>`;
+        }
+        html += '</div>';
+      }
+
+      // ── Équipes LOISIR avec joueurs ──
+      if (showLoisir && equipesLoisir.length) {
+        const mt = (showCompet || showLoisir) ? 'margin-top:2.5rem' : '';
+        html += `<div class="section-head" style="${mt}"><h2 style="font-size:1.3rem;color:var(--muted2)">Composition des équipes LOISIR</h2></div>`;
+        html += '<div class="equipes-grid">';
+        equipesLoisir.forEach((eq, i) => {
+          html += `<div class="equipe-card" style="animation-delay:${i*.03}s">
+            <div class="equipe-header"><span class="equipe-nom">${eq.nom}</span></div>
+            <div class="equipe-joueurs">
+              ${eq.joueurs.length
+                ? eq.joueurs.map(j => `<span class="joueur-tag">${j}</span>`).join('')
+                : '<span style="color:var(--muted);font-size:.78rem">Aucun joueur renseigné</span>'}
+            </div>
+          </div>`;
+        });
+        html += '</div>';
+      }
+
+      el.innerHTML = html || emptyHTML('Aucune poule trouvée.');
     }
 
-    // ── Équipes LOISIR avec joueurs ──
-    if (equipesLoisir.length) {
-      html += `<div class="section-head" style="margin-top:2.5rem"><h2 style="font-size:1.3rem;color:var(--muted2)">Composition des équipes LOISIR</h2></div>`;
-      html += '<div class="equipes-grid">';
-      equipesLoisir.forEach((eq, i) => {
-        html += `<div class="equipe-card" style="animation-delay:${i*.03}s">
-          <div class="equipe-header"><span class="equipe-nom">${eq.nom}</span></div>
-          <div class="equipe-joueurs">
-            ${eq.joueurs.length
-              ? eq.joueurs.map(j => `<span class="joueur-tag">${j}</span>`).join('')
-              : '<span style="color:var(--muted);font-size:.78rem">Aucun joueur renseigné</span>'}
-          </div>
-        </div>`;
-      });
-      html += '</div>';
-    }
+    window.setPouleFilter = function(f) {
+      // Toggle : re-cliquer sur le filtre actif le désélectionne
+      activeFilter = (activeFilter === f) ? null : f;
+      el.dataset.filter = activeFilter || '';
+      renderContent();
+    };
 
-    if (!html) { el.innerHTML = emptyHTML('Aucune poule trouvée.'); return; }
-    el.innerHTML = html;
+    renderContent();
     el.dataset.loaded = '1';
   } catch(e) { el.innerHTML = errorHTML(e.message); }
 }
@@ -920,12 +944,7 @@ async function renderClassements(force=false) {
       const hasCompet = Object.keys(compet).length > 0;
       const hasLoisir = Object.keys(loisir).length > 0;
 
-      // Barre de filtres
-      let html = `<div class="filter-bar" style="margin-bottom:1.75rem">
-        <button class="filter-chip ${activeFilter==='all'?'active':''}" onclick="setClassFilter('all')">🏅 Toutes les poules</button>
-        ${hasCompet ? `<button class="filter-chip ${activeFilter==='compet'?'active':''}" onclick="setClassFilter('compet')">⚡ COMPET</button>` : ''}
-        ${hasLoisir ? `<button class="filter-chip ${activeFilter==='loisir'?'active':''}" onclick="setClassFilter('loisir')">🎯 LOISIR</button>` : ''}
-      </div>`;
+      let html = '';
 
       function pouleTable(nom, equipes, color, delay) {
         if (!equipes || !equipes.length) return '';
@@ -955,7 +974,7 @@ async function renderClassements(force=false) {
 
       // Grille COMPET (2 colonnes sur tablette+)
       if ((activeFilter === 'all' || activeFilter === 'compet') && hasCompet) {
-        html += `<div class="section-head"><h2><span style="color:var(--blue)">⚡</span> Catégorie COMPET</h2></div>`;
+        html += `<div class="section-head"><h2><span style="color:var(--blue)">COMPET</span></h2></div>`;
         html += '<div class="classements-grid">';
         let d = 0;
         for (const [nom, equipes] of Object.entries(compet)) {
@@ -967,7 +986,7 @@ async function renderClassements(force=false) {
 
       // Grille LOISIR
       if ((activeFilter === 'all' || activeFilter === 'loisir') && hasLoisir) {
-        html += `<div class="section-head" style="margin-top:2.5rem"><h2><span style="color:var(--yellow)">🎯</span> Catégorie LOISIR</h2></div>`;
+        html += `<div class="section-head" style="margin-top:2.5rem"><h2><span style="color:var(--yellow)">LOISIR</span></h2></div>`;
         html += '<div class="classements-grid">';
         let d = 0;
         for (const [nom, equipes] of Object.entries(loisir)) {
@@ -1073,9 +1092,9 @@ async function renderPhasefinale(force=false) {
     }
 
     const meta = {
-      'ELITE':         { color: 'var(--blue)',   icon: '🥇' },
-      'INTERMÉDIAIRE': { color: 'var(--yellow)',  icon: '🥈' },
-      'LOISIR':        { color: 'var(--muted2)',  icon: '🎯' },
+      'ELITE':         { color: 'var(--blue)',   icon: '' },
+      'INTERMÉDIAIRE': { color: 'var(--yellow)',  icon: '' },
+      'LOISIR':        { color: 'var(--muted2)',  icon: '' },
     };
 
     function pouleCard(nom, equipes, delay) {
@@ -1088,7 +1107,7 @@ async function renderPhasefinale(force=false) {
             ? `<span class="rank ${rc}">${pos}</span>`
             : `<span style="color:var(--muted);font-size:.75rem">—</span>`
           }</td>
-          <td><strong>${e.eq}</strong></td>
+          <td>${e.eq ? `<strong>${e.eq}</strong>` : `<span style="color:var(--muted)">—</span>`}</td>
         </tr>`;
       }).join('');
 
