@@ -501,11 +501,11 @@ tbody td:not(:first-child):not(:nth-child(2)) { text-align: center; color: var(-
       </div>
     </a>
     <nav id="nav"></nav>
-    <button class="hamburger-btn" id="hamburgerBtn" onclick="toggleMobileMenu()" title="Menu" aria-label="Menu">
-      <span class="bar"></span><span class="bar"></span><span class="bar"></span>
-    </button>
     <button class="refresh-btn" id="refreshBtn" onclick="refreshData()" title="Rafraîchir">
       <span class="refresh-icon">↻</span><span class="refresh-countdown" id="refreshCountdown"></span>
+    </button>
+    <button class="hamburger-btn" id="hamburgerBtn" onclick="toggleMobileMenu()" title="Menu" aria-label="Menu">
+      <span class="bar"></span><span class="bar"></span><span class="bar"></span>
     </button>
   </div>
 </header>
@@ -514,7 +514,7 @@ tbody td:not(:first-child):not(:nth-child(2)) { text-align: center; color: var(-
 <div class="mobile-menu-overlay" id="mobileMenuOverlay" onclick="closeMobileMenu()">
   <div class="mobile-menu" onclick="event.stopPropagation()">
     <div class="mobile-menu-header">
-      <span class="mobile-menu-title">🏀 Navigation</span>
+      <span class="mobile-menu-title"><img src="" id="mobileLogo" style="height:36px;width:auto;" alt="BCH"></span>
       <button class="mobile-menu-close" onclick="closeMobileMenu()">✕</button>
     </div>
     <div id="mobileNav"></div>
@@ -572,9 +572,9 @@ let activeDay = 'all';
 const SECTIONS = [
   { id: 'calendrier',  label: '📅 Calendrier' },
   { id: 'poules',      label: '🏀 Participants & Poules' },
-  { id: 'classements', label: '📊 Classements' },
-  { id: 'phase2',      label: '⚔️ Phase 2' },
-  { id: 'phasefinale', label: '🏆 Finale' },
+  { id: 'classements', label: 'Phase 1' },
+  { id: 'phase2',      label: 'Phase 2' },
+  { id: 'phasefinale', label: '🏆 Finales' },
 ];
 
 function buildNav() {
@@ -1040,6 +1040,8 @@ function emptyHTML(m='Aucune donnée disponible.') { return `<div class="empty-s
 function errorHTML(m) { return `<div class="empty-state"><div class="icon">⚠️</div><p style="color:var(--loss)">Erreur de chargement</p><p style="margin-top:.5rem;font-size:.8rem">${m}</p></div>`; }
 
 buildNav();
+// Copie le src du logo header dans le menu mobile
+document.getElementById('mobileLogo').src = document.querySelector('.logo-wrap img').src;
 loadSection('calendrier');
 startAutoRefresh();
 </script>
