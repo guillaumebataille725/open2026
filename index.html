@@ -488,7 +488,7 @@ tbody td:not(:first-child):not(:nth-child(2)) { text-align: center; color: var(-
 </main>
 
 <script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzZkDl6Jls4Hz3oZM41EwdLWfewyQKi2pKeDm68AX7wwJO50Py7j613vLDlOMp8SVI/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxfFcLoN6v8OOCY6cBGzcWhUSuksvi9TjuOBoTQQS1i9lMopWjveMJd9K58wnOPKenZ/exec';
 
 const cache = {};
 let activeSection = 'calendrier';
@@ -517,12 +517,25 @@ function switchSection(id) {
   loadSection(id);
 }
 
-async function callAPI(action) {
-  if (cache[action]) return cache[action];
-  const res = await fetch(SCRIPT_URL + '?action=' + action, { method: 'GET', redirect: 'follow' });
-  const text = await res.text();
-  try { const d = JSON.parse(text); cache[action] = d; return d; }
-  catch(e) { throw new Error('Réponse invalide. Vérifiez le déploiement Apps Script.'); }
+function callAPI(action) {
+  if (cache[action]) return Promise.resolve(cache[action]);
+  return new Promise((resolve, reject) => {
+    const cbName = 'cb_' + action + '_' + Date.now();
+    const script = document.createElement('script');
+    const timeout = setTimeout(() => {
+      cleanup();
+      reject(new Error('Timeout — vérifiez le déploiement Apps Script.'));
+    }, 10000);
+    function cleanup() {
+      clearTimeout(timeout);
+      delete window[cbName];
+      if (script.parentNode) script.parentNode.removeChild(script);
+    }
+    window[cbName] = function(data) { cleanup(); cache[action] = data; resolve(data); };
+    script.src = SCRIPT_URL + '?action=' + action + '&callback=' + cbName;
+    script.onerror = () => { cleanup(); reject(new Error('Erreur réseau.')); };
+    document.head.appendChild(script);
+  });
 }
 
 function refreshData() {
