@@ -98,7 +98,9 @@ nav::-webkit-scrollbar { display: none; }
 .nav-btn:hover { color: var(--white); background: var(--surface2); }
 .nav-btn.active { background: var(--yellow-dim); border-color: var(--yellow); color: var(--yellow); }
 
-/* ── HAMBURGER ── */
+.header-right {
+  display: flex; align-items: center; gap: .5rem; flex-shrink: 0;
+}
 .hamburger-btn {
   display: none; flex-shrink: 0;
   background: transparent; border: 1px solid var(--border);
@@ -385,7 +387,8 @@ tbody td:not(:first-child):not(:nth-child(2)) { text-align: center; color: var(-
   /* Force taille de base */
   html, body { font-size: 18px !important; }
   /* Layout */
-  .header-inner { padding: 0 16px; height: 60px; }
+  .header-inner { padding: 0 16px; height: 60px; gap: .75rem; overflow: hidden; }
+  header { overflow: visible; }
   .hero { padding: 20px 16px 16px; }
   .hero-logo-bg { display: none; }
   main { padding: 16px 14px; }
@@ -395,6 +398,7 @@ tbody td:not(:first-child):not(:nth-child(2)) { text-align: center; color: var(-
   .equipes-grid { grid-template-columns: 1fr; }
   .stats-row { grid-template-columns: repeat(2, 1fr); gap: 8px; }
   /* Header & nav */
+  .logo-wrap img { height: 36px !important; }
   .logo-text .event { font-size: 20px !important; }
   nav { display: none !important; }
   .hamburger-btn { display: flex !important; }
@@ -501,12 +505,14 @@ tbody td:not(:first-child):not(:nth-child(2)) { text-align: center; color: var(-
       </div>
     </a>
     <nav id="nav"></nav>
-    <button class="refresh-btn" id="refreshBtn" onclick="refreshData()" title="Rafraîchir">
-      <span class="refresh-icon">↻</span><span class="refresh-countdown" id="refreshCountdown"></span>
-    </button>
-    <button class="hamburger-btn" id="hamburgerBtn" onclick="toggleMobileMenu()" title="Menu" aria-label="Menu">
-      <span class="bar"></span><span class="bar"></span><span class="bar"></span>
-    </button>
+    <div class="header-right">
+      <button class="hamburger-btn" id="hamburgerBtn" onclick="toggleMobileMenu()" title="Menu" aria-label="Menu">
+        <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+      </button>
+      <button class="refresh-btn" id="refreshBtn" onclick="refreshData()" title="Rafraîchir">
+        <span class="refresh-icon">↻</span><span class="refresh-countdown" id="refreshCountdown"></span>
+      </button>
+    </div>
   </div>
 </header>
 
@@ -514,7 +520,13 @@ tbody td:not(:first-child):not(:nth-child(2)) { text-align: center; color: var(-
 <div class="mobile-menu-overlay" id="mobileMenuOverlay" onclick="closeMobileMenu()">
   <div class="mobile-menu" onclick="event.stopPropagation()">
     <div class="mobile-menu-header">
-      <span class="mobile-menu-title"><img src="" id="mobileLogo" style="height:36px;width:auto;" alt="BCH"></span>
+      <div style="display:flex;align-items:center;gap:.75rem;">
+        <img src="" id="mobileLogo" style="height:40px;width:auto;" alt="BCH">
+        <div style="line-height:1.1;">
+          <div style="font-family:var(--font-title);font-size:.6rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted2);">Basket Club de La Hague</div>
+          <div style="font-family:var(--font-title);font-size:1.4rem;font-weight:900;letter-spacing:.04em;"><span style="color:var(--yellow)">OPEN</span> <span style="color:var(--blue)">2026</span></div>
+        </div>
+      </div>
       <button class="mobile-menu-close" onclick="closeMobileMenu()">✕</button>
     </div>
     <div id="mobileNav"></div>
