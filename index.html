@@ -270,7 +270,9 @@ main { max-width: 1400px; margin: 0 auto; padding: 2.5rem 2rem; position: relati
 .team-num { font-family: var(--font-title); font-size: .8rem; font-weight: 700; color: var(--muted); min-width: 1.2rem; }
 
 /* ── CLASSEMENT ── */
-.classement-block { margin-bottom: 2.5rem; }
+.classements-grid { display: grid; grid-template-columns: 1fr; gap: 1.25rem; margin-bottom: 1rem; }
+@media (min-width: 700px) { .classements-grid { grid-template-columns: repeat(2, 1fr); } }
+.classement-block { margin-bottom: 0; }
 .table-wrap { overflow-x: auto; border-radius: var(--radius); border: 1px solid var(--border); }
 table { width: 100%; border-collapse: collapse; font-size: .85rem; }
 thead tr { background: var(--surface2); }
@@ -375,7 +377,8 @@ tbody td:not(:first-child):not(:nth-child(2)) { text-align: center; color: var(-
   .day-header h2 { font-size: 22px !important; }
   .day-header .count { font-size: 13px !important; }
   /* Classements */
-  .classement-block { margin-bottom: 32px; }
+  .classements-grid { grid-template-columns: 1fr !important; gap: 16px; }
+  .classement-block { margin-bottom: 0; }
   .section-head h2 { font-size: 26px !important; }
   table { font-size: 15px !important; }
   thead th { font-size: 12px !important; padding: 9px 10px; }
@@ -488,7 +491,7 @@ tbody td:not(:first-child):not(:nth-child(2)) { text-align: center; color: var(-
 </main>
 
 <script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxfFcLoN6v8OOCY6cBGzcWhUSuksvi9TjuOBoTQQS1i9lMopWjveMJd9K58wnOPKenZ/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyjKcr77lCGqtQMij8d165kxNbvouMtMelJeMqk8aSs_DBBcTRlFoD9C8psp0YjPslR/exec';
 
 const cache = {};
 let activeSection = 'calendrier';
@@ -758,34 +761,82 @@ async function renderClassements(force=false) {
   try {
     const data = await callAPI('getClassements');
     updateTimestamp();
-    const compet = data.compet || [];
-    const loisir = data.loisir || [];
+    const compet = data.compet || {};
+    const loisir = data.loisir || {};
 
-    function tableHTML(title, color, rows) {
-      if (!rows.length) return '';
-      return `<div class="classement-block">
-        <div class="section-head"><h2><span style="color:${color}">${title}</span></h2></div>
-        <div class="table-wrap"><table>
-          <thead><tr><th>#</th><th>Équipe</th><th>V</th><th>N</th><th>D</th><th>BP</th><th>BC</th><th>Diff</th><th>Pts</th></tr></thead>
-          <tbody>${rows.map((r,i) => {
-            const rc = i===0?'gold':i===1?'silver':i===2?'bronze':'';
-            const diff = r.bp-r.bc;
-            const dc = diff>0?'diff-pos':diff<0?'diff-neg':'diff-null';
-            return `<tr style="animation-delay:${i*.02}s">
-              <td><span class="rank ${rc}">${i+1}</span></td>
-              <td><strong>${r.eq}</strong></td>
-              <td>${r.v}</td><td>${r.n}</td><td>${r.d}</td>
-              <td>${r.bp}</td><td>${r.bc}</td>
-              <td class="${dc}">${diff>0?'+':''}${diff}</td>
-              <td><span class="pts">${r.pts}</span></td>
-            </tr>`;
-          }).join('')}</tbody>
-        </table></div>
+    // Filtre actif
+    let activeFilter = el.dataset.filter || 'all';
+
+    function renderContent() {
+      const hasCompet = Object.keys(compet).length > 0;
+      const hasLoisir = Object.keys(loisir).length > 0;
+
+      // Barre de filtres
+      let html = `<div class="filter-bar" style="margin-bottom:1.75rem">
+        <button class="filter-chip ${activeFilter==='all'?'active':''}" onclick="setClassFilter('all')">🏅 Toutes les poules</button>
+        ${hasCompet ? `<button class="filter-chip ${activeFilter==='compet'?'active':''}" onclick="setClassFilter('compet')">⚡ COMPET</button>` : ''}
+        ${hasLoisir ? `<button class="filter-chip ${activeFilter==='loisir'?'active':''}" onclick="setClassFilter('loisir')">🎯 LOISIR</button>` : ''}
       </div>`;
+
+      function pouleTable(nom, equipes, color, delay) {
+        if (!equipes || !equipes.length) return '';
+        return `<div class="classement-block" style="animation-delay:${delay}s">
+          <div class="section-head" style="margin-bottom:1rem">
+            <h2 style="font-size:1.4rem"><span style="color:${color}">${nom}</span></h2>
+          </div>
+          <div class="table-wrap"><table>
+            <thead><tr><th>#</th><th>Équipe</th></tr></thead>
+            <tbody>${equipes.map((r,i) => {
+              const rc = i===0?'gold':i===1?'silver':i===2?'bronze':'';
+              return `<tr style="animation-delay:${i*.04}s">
+                <td><span class="rank ${rc}">${i+1}</span></td>
+                <td><strong>${r.eq}</strong></td>
+              </tr>`;
+            }).join('')}</tbody>
+          </table></div>
+        </div>`;
+      }
+
+      // Grille COMPET (2 colonnes sur tablette+)
+      if ((activeFilter === 'all' || activeFilter === 'compet') && hasCompet) {
+        html += `<div class="section-head"><h2><span style="color:var(--yellow)">⚡</span> Catégorie COMPET</h2></div>`;
+        html += '<div class="classements-grid">';
+        let d = 0;
+        for (const [nom, equipes] of Object.entries(compet)) {
+          html += pouleTable(nom, equipes, 'var(--yellow)', d * 0.07);
+          d++;
+        }
+        html += '</div>';
+      }
+
+      // Grille LOISIR
+      if ((activeFilter === 'all' || activeFilter === 'loisir') && hasLoisir) {
+        html += `<div class="section-head" style="margin-top:2.5rem"><h2><span style="color:var(--blue)">🎯</span> Catégorie LOISIR</h2></div>`;
+        html += '<div class="classements-grid">';
+        let d = 0;
+        for (const [nom, equipes] of Object.entries(loisir)) {
+          html += pouleTable(nom, equipes, 'var(--blue)', d * 0.07);
+          d++;
+        }
+        html += '</div>';
+      }
+
+      if (!hasCompet && !hasLoisir) {
+        html += emptyHTML('Classements non disponibles — les données de la 1ère phase ne sont pas encore renseignées.');
+      }
+
+      el.innerHTML = html;
     }
 
-    el.innerHTML = tableHTML('⚡ COMPET — Classement général', 'var(--yellow)', compet)
-                 + tableHTML('🎯 LOISIR — Classement général', 'var(--blue)', loisir);
+    window.setClassFilter = function(f) {
+      activeFilter = f;
+      el.dataset.filter = f;
+      document.querySelectorAll('#classmentsContent .filter-chip').forEach(c => c.classList.remove('active'));
+      event.target.classList.add('active');
+      renderContent();
+    };
+
+    renderContent();
     el.dataset.loaded = '1';
   } catch(e) { el.innerHTML = errorHTML(e.message); }
 }
