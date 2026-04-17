@@ -523,9 +523,9 @@ tbody td:not(:first-child):not(:nth-child(2)) { text-align: center; color: var(-
 .match-card-v2 {
   background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
   padding: 1rem 1.1rem; display: grid;
-  grid-template-columns: 72px 1fr 72px;
+  grid-template-columns: 1fr 80px 1fr;
   grid-template-rows: auto auto;
-  gap: 0 .5rem;
+  gap: 0 .4rem;
   align-items: center;
   transition: border-color .2s, transform .15s, box-shadow .15s;
   animation: fadeUp .25s ease backwards;
@@ -650,7 +650,7 @@ tbody td:not(:first-child):not(:nth-child(2)) { text-align: center; color: var(-
   .cal-stats-row { grid-template-columns: repeat(2,1fr); gap: 8px; }
   .cal-stat { padding: 14px 16px; }
   .cal-stat-val { font-size: 28px !important; }
-  .match-card-v2 { padding: 14px 16px; grid-template-columns: 64px 1fr 64px; }
+  .match-card-v2 { padding: 14px 16px; grid-template-columns: 1fr 72px 1fr; }
   .mc-time { font-size: 22px !important; }
   .mc-score-val { font-size: 38px !important; }
   .mc-eq1-name, .mc-eq2-name { font-size: 15px !important; }
@@ -672,7 +672,7 @@ tbody td:not(:first-child):not(:nth-child(2)) { text-align: center; color: var(-
 
 /* ── Search bar ── */
 .cal-search-wrap {
-  position: relative; margin-bottom: 1.5rem;
+  position: relative; margin-top: .4rem;
 }
 .cal-search-input {
   width: 100%; background: var(--surface); border: 1px solid var(--border);
@@ -951,31 +951,27 @@ function renderCalFull(matches, el, filterEl) {
   const terrainDots   = { 1: '🟧', 2: '🟦', 3: '🟩' };
   const terrains = [...new Set(matches.map(m => m.terrain).filter(Boolean))].sort();
 
+  // Filtres sans "Tous" — toggle : re-cliquer désélectionne
   filterEl.innerHTML = `
   <div class="cal-filters">
     <div class="cal-filter-row">
       <span class="filter-label">Jour</span>
-      <button class="filter-chip filter-chip-day ${calActiveDay==='all'?'active':''}" onclick="calSetDay('all')">🗓 Tous</button>
       ${days.map(d => `<button class="filter-chip filter-chip-day ${calActiveDay===d?'active':''}" onclick="calSetDay('${d}')">${d}</button>`).join('')}
     </div>
     <div class="cal-filter-row">
       <span class="filter-label">Terrain</span>
-      <button class="filter-chip ${calActiveTerrain===0?'active':''}" onclick="calSetTerrain(0)">Tous</button>
       ${terrains.map(t => `<button class="filter-chip filter-chip-terrain t${t} ${calActiveTerrain===t?'active':''}" onclick="calSetTerrain(${t})">${terrainDots[t]||''} ${terrainLabels[t]||'T'+t}</button>`).join('')}
     </div>
+    <div class="cal-search-wrap" id="calSearchWrap">
+      <span class="cal-search-icon">🔍</span>
+      <input class="cal-search-input" id="calSearchInput" type="text"
+        placeholder="Rechercher une équipe…"
+        value="${calSearchText}"
+        oninput="calOnSearch(this.value)"
+        autocomplete="off" autocorrect="off" spellcheck="false">
+      <button class="cal-search-clear ${calSearchText ? 'visible' : ''}" id="calSearchClear" onclick="calClearSearch()">✕</button>
+    </div>
   </div>`;
-
-  // ── Barre de recherche ──
-  filterEl.insertAdjacentHTML('beforeend', `
-  <div class="cal-search-wrap" id="calSearchWrap">
-    <span class="cal-search-icon">🔍</span>
-    <input class="cal-search-input" id="calSearchInput" type="text"
-      placeholder="Rechercher une équipe…"
-      value="${calSearchText}"
-      oninput="calOnSearch(this.value)"
-      autocomplete="off" autocorrect="off" spellcheck="false">
-    <button class="cal-search-clear ${calSearchText ? 'visible' : ''}" id="calSearchClear" onclick="calClearSearch()">✕</button>
-  </div>`);
 
   // ── Filtrage ──
   let filtered = [...matches];
@@ -1108,12 +1104,14 @@ function renderCalFull(matches, el, filterEl) {
   el.innerHTML = html;
 }
 function calSetDay(day) {
-  calActiveDay = day;
+  // Toggle : re-cliquer sur le filtre actif le désélectionne
+  calActiveDay = (calActiveDay === day) ? 'all' : day;
   renderCalFull(calData, document.getElementById('calendrierContent'), document.getElementById('filterDay'));
 }
 
 function calSetTerrain(t) {
-  calActiveTerrain = t;
+  // Toggle : re-cliquer sur le filtre actif le désélectionne
+  calActiveTerrain = (calActiveTerrain === t) ? 0 : t;
   renderCalFull(calData, document.getElementById('calendrierContent'), document.getElementById('filterDay'));
 }
 
