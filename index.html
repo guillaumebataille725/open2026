@@ -661,6 +661,21 @@ tbody td:not(:first-child):not(:nth-child(2)) { text-align: center; color: var(-
   .filter-label { min-width: 48px; font-size: .62rem; }
 }
 
+
+/* Animation card */
+.match-card-v2.anim-card {
+  background: linear-gradient(135deg, var(--surface) 0%, #0d1a2a 100%);
+  border-color: #f5c50a30;
+  grid-template-columns: 1fr;
+}
+.match-card-v2.anim-card:hover { border-color: var(--yellow); }
+.mc-badge-anim {
+  font-family: var(--font-title); font-size: .62rem; font-weight: 700;
+  letter-spacing: .1em; text-transform: uppercase;
+  color: var(--yellow); background: var(--yellow-dim); border: 1px solid #f5c50a30;
+  padding: .15rem .55rem; border-radius: 4px;
+}
+
 </style>
 </head>
 <body>
@@ -744,7 +759,7 @@ tbody td:not(:first-child):not(:nth-child(2)) { text-align: center; color: var(-
 </main>
 
 <script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzvhH5gK8z5GAxXHHbHoqwOBdMr2Yxjka8rwlia-gIl0lRgtfTOefkzEbaZN9NGDy61/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwXVdFmZicJlSTuf27DVxdiSDg94pADaJ3Pb6JSMOWRQ7OoyS76skAACx8w-ydWjsoj/exec';
 
 const cache = {};
 let activeSection = 'calendrier';
@@ -781,8 +796,8 @@ function switchSectionMobile(id) {
   switchSection(id);
 }
 
-// ── AUTO-REFRESH TOUTES LES 180s ──
-const AUTO_REFRESH_INTERVAL = 180; // secondes
+// ── AUTO-REFRESH TOUTES LES 30s ──
+const AUTO_REFRESH_INTERVAL = 30; // secondes
 let countdownValue = AUTO_REFRESH_INTERVAL;
 let countdownTimer = null;
 let autoRefreshTimer = null;
@@ -906,9 +921,10 @@ async function renderCalendrier(force=false) {
 }
 
 function renderCalFull(matches, el, filterEl) {
-  // ── Barre de filtres ──
+  // ── Barre de filtres double ──
   const days = [...new Set(matches.map(m => m.jour).filter(Boolean))];
-  const terrainLabels = { 1: '🟧 Terrain 1', 2: '🟦 Terrain 2', 3: '🟩 Terrain 3' };
+  const terrainLabels = { 1: 'Terrain 1', 2: 'Terrain 2', 3: 'Terrain 3' };
+  const terrainDots   = { 1: '🟧', 2: '🟦', 3: '🟩' };
   const terrains = [...new Set(matches.map(m => m.terrain).filter(Boolean))].sort();
 
   filterEl.innerHTML = `
@@ -921,7 +937,7 @@ function renderCalFull(matches, el, filterEl) {
     <div class="cal-filter-row">
       <span class="filter-label">Terrain</span>
       <button class="filter-chip ${calActiveTerrain===0?'active':''}" onclick="calSetTerrain(0)">Tous</button>
-      ${terrains.map(t => `<button class="filter-chip filter-chip-terrain t${t} ${calActiveTerrain===t?'active':''}" onclick="calSetTerrain(${t})">${terrainLabels[t]||'T'+t}</button>`).join('')}
+      ${terrains.map(t => `<button class="filter-chip filter-chip-terrain t${t} ${calActiveTerrain===t?'active':''}" onclick="calSetTerrain(${t})">${terrainDots[t]||''} ${terrainLabels[t]||'T'+t}</button>`).join('')}
     </div>
   </div>`;
 
@@ -935,16 +951,17 @@ function renderCalFull(matches, el, filterEl) {
     return;
   }
 
-  // ── Stats ──
-  const nbPlayed = filtered.filter(m => m.sc1 !== null && m.sc2 !== null).length;
-  const nbPending = filtered.length - nbPlayed;
-  const progress = filtered.length ? Math.round(nbPlayed / filtered.length * 100) : 0;
-  const nbTerrains = [...new Set(filtered.map(m => m.terrain))].length;
+  // ── Stats (seulement les vrais matchs) ──
+  const vraisMatchs   = filtered.filter(m => m.type === 'match');
+  const nbPlayed      = vraisMatchs.filter(m => m.sc1 !== null && m.sc2 !== null).length;
+  const nbPending     = vraisMatchs.length - nbPlayed;
+  const progress      = vraisMatchs.length ? Math.round(nbPlayed / vraisMatchs.length * 100) : 0;
+  const nbTerrains    = [...new Set(filtered.map(m => m.terrain))].length;
 
   let html = `<div class="cal-stats-row">
     <div class="cal-stat" style="animation-delay:.04s">
       <div class="cal-stat-label">Total matchs</div>
-      <div class="cal-stat-val">${filtered.length}</div>
+      <div class="cal-stat-val">${vraisMatchs.length}</div>
       <div class="cal-progress"><div class="cal-progress-fill" style="width:${progress}%"></div></div>
     </div>
     <div class="cal-stat" style="animation-delay:.08s">
@@ -961,8 +978,7 @@ function renderCalFull(matches, el, filterEl) {
     </div>
   </div>`;
 
-  // ── Regroupement par jour puis par créneau horaire ──
-  // Tri : d'abord par jour (ordre d'apparition dans calData), puis heure
+  // ── Regroupement : jour > heure (ordre naturel du planning) ──
   const dayOrder = [...new Set(matches.map(m => m.jour).filter(Boolean))];
   const byDay = {};
   filtered.forEach(m => {
@@ -972,65 +988,82 @@ function renderCalFull(matches, el, filterEl) {
     byDay[k][m.heure].push(m);
   });
 
-  // Ordre des jours selon ordre naturel du planning
   const sortedDays = dayOrder.filter(d => byDay[d]);
 
   let cardDelay = 0;
   for (const jour of sortedDays) {
-    const heures = Object.keys(byDay[jour]).sort();
-    const totalJour = heures.reduce((acc, h) => acc + byDay[jour][h].length, 0);
-    const jouésJour = heures.reduce((acc, h) => acc + byDay[jour][h].filter(m => m.sc1 !== null && m.sc2 !== null).length, 0);
+    const heures = Object.keys(byDay[jour]); // ordre d'insertion = ordre du planning
+    const matchesJour = heures.reduce((a, h) => a.concat(byDay[jour][h].filter(m => m.type==='match')), []);
+    const jouésJour   = matchesJour.filter(m => m.sc1 !== null && m.sc2 !== null).length;
 
     html += `<div class="day-header-v2">
       <h2>📅 ${jour}</h2>
       <div class="dhv2-line"></div>
-      <span class="dhv2-info">${jouésJour}/${totalJour} matchs joués</span>
+      <span class="dhv2-info">${jouésJour}/${matchesJour.length} matchs joués</span>
     </div>`;
 
+    html += '<div class="cards-grid">';
     for (const heure of heures) {
       const mList = byDay[jour][heure];
-      html += '<div class="cards-grid">';
       mList.forEach(m => {
         cardDelay++;
-        const played = m.sc1 !== null && m.sc2 !== null;
-        const draw   = played && m.sc1 === m.sc2;
-        const w1     = played && !draw && m.sc1 > m.sc2;
-        const w2     = played && !draw && m.sc2 > m.sc1;
+        const delay = (cardDelay * .022) + 's';
 
-        const tClassMap = { 1: 'terrain-1', 2: 'terrain-2', 3: 'terrain-3' };
-        const tClass    = tClassMap[m.terrain] || 'terrain-1';
-        const tLabel    = { 1: 'Terrain 1', 2: 'Terrain 2', 3: 'Terrain 3' }[m.terrain] || 'T?';
-        const tDot      = { 1: '🟧', 2: '🟦', 3: '🟩' }[m.terrain] || '';
-
-        html += `
-        <div class="match-card-v2 ${played ? 'played' : ''}" style="animation-delay:${cardDelay * .022}s">
-          <div class="mc-header">
-            <span class="mc-time">${m.heure}</span>
-            <div class="mc-badges">
-              <span class="mc-terrain ${tClass}">${tDot} ${tLabel}</span>
-              ${played ? '<span class="mc-badge-played">✓ Joué</span>' : '<span class="mc-badge-upcoming">À venir</span>'}
+        if (m.type === 'animation') {
+          // ── Card animation ──
+          const tDot  = terrainDots[m.terrain] || '';
+          const tLabel = terrainLabels[m.terrain] || 'T?';
+          const tClass = `terrain-${m.terrain}`;
+          html += `
+          <div class="match-card-v2 anim-card" style="animation-delay:${delay}">
+            <div class="mc-header">
+              <span class="mc-time">${m.heure}</span>
+              <div class="mc-badges">
+                <span class="mc-terrain ${tClass}">${tDot} ${tLabel}</span>
+                <span class="mc-badge-anim">🎯 Animation</span>
+              </div>
             </div>
-          </div>
-          <div class="mc-eq1-name ${w1 ? 'winner' : played && !draw ? 'loser' : ''}">${m.eq1}</div>
-          <div class="mc-scores">
-            ${played
-              ? `<span class="mc-score-val ${w1 ? 'w' : draw ? 'd' : 'l'}">${m.sc1}</span>
-                 <span class="mc-score-sep">–</span>
-                 <span class="mc-score-val ${w2 ? 'w' : draw ? 'd' : 'l'}">${m.sc2}</span>`
-              : `<span class="mc-pending-pill">VS</span>`
-            }
-          </div>
-          <div class="mc-eq2-name ${w2 ? 'winner' : played && !draw ? 'loser' : ''}">${m.eq2}</div>
-          ${draw ? '<div class="mc-draw-note"><span class="mc-draw-badge">Égalité</span></div>' : ''}
-        </div>`;
+            <div class="mc-anim-name" style="grid-column:1/-1;text-align:center;font-family:var(--font-title);font-size:1.15rem;font-weight:800;color:var(--yellow);letter-spacing:.04em;text-transform:uppercase;padding:.2rem 0 .1rem">${m.nom}</div>
+          </div>`;
+        } else {
+          // ── Card match ──
+          const played = m.sc1 !== null && m.sc2 !== null;
+          const draw   = played && m.sc1 === m.sc2;
+          const w1     = played && !draw && m.sc1 > m.sc2;
+          const w2     = played && !draw && m.sc2 > m.sc1;
+          const tDot   = terrainDots[m.terrain] || '';
+          const tLabel = terrainLabels[m.terrain] || 'T?';
+          const tClass = `terrain-${m.terrain}`;
+
+          html += `
+          <div class="match-card-v2 ${played ? 'played' : ''}" style="animation-delay:${delay}">
+            <div class="mc-header">
+              <span class="mc-time">${m.heure}</span>
+              <div class="mc-badges">
+                <span class="mc-terrain ${tClass}">${tDot} ${tLabel}</span>
+                ${played ? '<span class="mc-badge-played">✓ Joué</span>' : '<span class="mc-badge-upcoming">À venir</span>'}
+              </div>
+            </div>
+            <div class="mc-eq1-name ${w1 ? 'winner' : played && !draw ? 'loser' : ''}">${m.eq1 || '—'}</div>
+            <div class="mc-scores">
+              ${played
+                ? `<span class="mc-score-val ${w1 ? 'w' : draw ? 'd' : 'l'}">${m.sc1}</span>
+                   <span class="mc-score-sep">–</span>
+                   <span class="mc-score-val ${w2 ? 'w' : draw ? 'd' : 'l'}">${m.sc2}</span>`
+                : `<span class="mc-pending-pill">VS</span>`
+              }
+            </div>
+            <div class="mc-eq2-name ${w2 ? 'winner' : played && !draw ? 'loser' : ''}">${m.eq2 || '—'}</div>
+            ${draw ? '<div class="mc-draw-note"><span class="mc-draw-badge">Égalité</span></div>' : ''}
+          </div>`;
+        }
       });
-      html += '</div>';
     }
+    html += '</div>'; // cards-grid
   }
 
   el.innerHTML = html;
 }
-
 function calSetDay(day) {
   calActiveDay = day;
   renderCalFull(calData, document.getElementById('calendrierContent'), document.getElementById('filterDay'));
