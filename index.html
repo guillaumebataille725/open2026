@@ -576,7 +576,7 @@ tbody td:not(:first-child):not(:nth-child(2)) { text-align: center; color: var(-
 </main>
 
 <script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwTpy_4cAZd98lPDyNlGXFIGyt1hZ6q6rvnH1Aks660gPHJ-bu-W4GI5LKH0TqJ_YjY/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwjHpSAheOg1VLieEhDsMstvcYdAAw5GqdwHzHW1GMtG5FGKYh_cbTDqIe0PAqrVE5U/exec';
 
 const cache = {};
 let activeSection = 'calendrier';
@@ -1063,52 +1063,57 @@ async function renderPhasefinale(force=false) {
   el.innerHTML = loadingHTML();
   try {
     const data = await callAPI('getPhasefinale');
-    const matches = data.matches || [];
+    if (data.error) { el.innerHTML = errorHTML(data.error); return; }
     updateTimestamp();
-    if (!matches.length) { el.innerHTML = emptyHTML('Phase finale non disponible.'); return; }
-    el.innerHTML = genericMatchesHTML(matches, '🏆 Phase Finale');
+
+    const tournois = data.tournois || {};
+    if (!Object.keys(tournois).length) {
+      el.innerHTML = emptyHTML('Les données des finales ne sont pas encore disponibles.');
+      return;
+    }
+
+    const meta = {
+      'ELITE':         { color: 'var(--blue)',   icon: '🥇' },
+      'INTERMÉDIAIRE': { color: 'var(--yellow)',  icon: '🥈' },
+      'LOISIR':        { color: 'var(--muted2)',  icon: '🎯' },
+    };
+
+    function pouleCard(nom, equipes, delay) {
+      const { color, icon } = meta[nom] || { color: 'var(--yellow)', icon: '🏆' };
+      const rows = equipes.map((e, i) => {
+        const pos = e.rang;
+        const rc  = pos === 1 ? 'gold' : pos === 2 ? 'silver' : pos === 3 ? 'bronze' : '';
+        return `<tr style="animation-delay:${i * .04}s">
+          <td>${pos !== null
+            ? `<span class="rank ${rc}">${pos}</span>`
+            : `<span style="color:var(--muted);font-size:.75rem">—</span>`
+          }</td>
+          <td><strong>${e.eq}</strong></td>
+        </tr>`;
+      }).join('');
+
+      return `<div class="classement-block" style="animation-delay:${delay}s">
+        <div class="section-head" style="margin-bottom:1rem">
+          <h2 style="font-size:1.4rem"><span style="color:${color}">${icon} ${nom}</span></h2>
+        </div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>#</th><th>Équipe</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table></div>
+      </div>`;
+    }
+
+    let html = '<div class="classements-grid">';
+    let d = 0;
+    for (const [nom, equipes] of Object.entries(tournois)) {
+      html += pouleCard(nom, equipes, d * 0.07);
+      d++;
+    }
+    html += '</div>';
+
+    el.innerHTML = html;
     el.dataset.loaded = '1';
   } catch(e) { el.innerHTML = errorHTML(e.message); }
 }
 
-function genericMatchesHTML(matches, title) {
-  let html = `<div class="day-header" style="margin-top:0"><h2>${title}</h2><div class="line"></div><span class="count">${matches.length} matchs</span></div><div class="cards-grid">`;
-  matches.forEach((m,i) => {
-    const played = m.sc1!==null && m.sc2!==null;
-    const draw = played && m.sc1===m.sc2;
-    const w1 = played && !draw && m.sc1>m.sc2;
-    const w2 = played && !draw && m.sc2>m.sc1;
-    html += `<div class="match-card ${played?'has-result':''}" style="animation-delay:${i*.03}s">
-      <div class="match-meta">
-        <span class="match-time">${m.heure||m.label||''}</span>
-        ${m.groupe?`<span class="match-terrain terrain-1">${m.groupe}</span>`:''}
-      </div>
-      <div class="match-score">
-        <div class="team-name left ${w1?'winner':played&&!draw?'loser':''}">${m.eq1}</div>
-        <div class="score-block">
-          ${played
-            ? `<span class="score-val ${w1?'winner':draw?'draw':'loser'}">${m.sc1}</span>
-               <span class="score-sep">—</span>
-               <span class="score-val ${w2?'winner':draw?'draw':'loser'}">${m.sc2}</span>`
-            : `<span class="badge-pending">À venir</span>`}
-        </div>
-        <div class="team-name right ${w2?'winner':played&&!draw?'loser':''}">${m.eq2}</div>
-      </div>
-      ${draw?'<div style="text-align:center"><span class="badge-draw">Égalité</span></div>':''}
-    </div>`;
-  });
-  return html + '</div>';
-}
-
-function loadingHTML() { return '<div class="loading"><div class="loader"></div><p>Chargement…</p></div>'; }
-function emptyHTML(m='Aucune donnée disponible.') { return `<div class="empty-state"><div class="icon">🏀</div><p>${m}</p></div>`; }
-function errorHTML(m) { return `<div class="empty-state"><div class="icon">⚠️</div><p style="color:var(--loss)">Erreur de chargement</p><p style="margin-top:.5rem;font-size:.8rem">${m}</p></div>`; }
-
-buildNav();
-// Copie le src du logo header dans le menu mobile
-document.getElementById('mobileLogo').src = document.querySelector('.logo-wrap img').src;
-loadSection('calendrier');
-startAutoRefresh();
-</script>
-</body>
-</html>
+>
