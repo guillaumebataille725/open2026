@@ -569,8 +569,8 @@ tbody td:not(:first-child):not(:nth-child(2)) { text-align: center; color: var(-
 
 /* Score block */
 .mc-eq1-name, .mc-eq2-name {
-  font-weight: 700; font-size: .88rem; line-height: 1.25;
-  max-width: 100%; overflow: hidden; text-overflow: ellipsis;
+  font-weight: 700; font-size: .85rem; line-height: 1.3;
+  max-width: 100%; word-break: break-word; hyphens: auto;
 }
 .mc-eq1-name { text-align: left; }
 .mc-eq2-name { text-align: right; }
@@ -666,14 +666,37 @@ tbody td:not(:first-child):not(:nth-child(2)) { text-align: center; color: var(-
 .match-card-v2.anim-card {
   background: linear-gradient(135deg, var(--surface) 0%, #0d1a2a 100%);
   border-color: #f5c50a30;
-  grid-template-columns: 1fr;
 }
 .match-card-v2.anim-card:hover { border-color: var(--yellow); }
-.mc-badge-anim {
-  font-family: var(--font-title); font-size: .62rem; font-weight: 700;
-  letter-spacing: .1em; text-transform: uppercase;
-  color: var(--yellow); background: var(--yellow-dim); border: 1px solid #f5c50a30;
-  padding: .15rem .55rem; border-radius: 4px;
+
+
+/* ── Search bar ── */
+.cal-search-wrap {
+  position: relative; margin-bottom: 1.5rem;
+}
+.cal-search-input {
+  width: 100%; background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); color: var(--white);
+  font-family: var(--font-body); font-size: .9rem; font-weight: 500;
+  padding: .6rem 1rem .6rem 2.5rem;
+  outline: none; transition: border-color .2s;
+}
+.cal-search-input::placeholder { color: var(--muted); }
+.cal-search-input:focus { border-color: var(--blue); }
+.cal-search-icon {
+  position: absolute; left: .8rem; top: 50%; transform: translateY(-50%);
+  color: var(--muted); font-size: .9rem; pointer-events: none;
+}
+.cal-search-clear {
+  position: absolute; right: .6rem; top: 50%; transform: translateY(-50%);
+  background: transparent; border: none; color: var(--muted); cursor: pointer;
+  font-size: .85rem; padding: .2rem .4rem; border-radius: 4px;
+  display: none; transition: color .15s;
+}
+.cal-search-clear:hover { color: var(--loss); }
+.cal-search-clear.visible { display: block; }
+@media (max-width:699px) {
+  .cal-search-input { font-size: 16px; padding: 10px 14px 10px 36px; }
 }
 
 </style>
@@ -759,7 +782,7 @@ tbody td:not(:first-child):not(:nth-child(2)) { text-align: center; color: var(-
 </main>
 
 <script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwXVdFmZicJlSTuf27DVxdiSDg94pADaJ3Pb6JSMOWRQ7OoyS76skAACx8w-ydWjsoj/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyX7jGzGKzpDRauSZONGhuiHWlJs7ie1MoC2KwSsxuSB8yu1w-ftX9Yqm7uYLg4MUwz/exec';
 
 const cache = {};
 let activeSection = 'calendrier';
@@ -904,6 +927,7 @@ function loadSection(id, force=false) {
 // ── CALENDRIER v2 ──
 let calActiveDay = 'all';    // filtre jour : 'all' | 'Vendredi' | 'Samedi' | …
 let calActiveTerrain = 0;    // filtre terrain : 0=tous | 1 | 2 | 3
+let calSearchText = '';      // filtre recherche équipe
 
 async function renderCalendrier(force=false) {
   const el = document.getElementById('calendrierContent');
@@ -941,10 +965,30 @@ function renderCalFull(matches, el, filterEl) {
     </div>
   </div>`;
 
+  // ── Barre de recherche ──
+  filterEl.insertAdjacentHTML('beforeend', `
+  <div class="cal-search-wrap" id="calSearchWrap">
+    <span class="cal-search-icon">🔍</span>
+    <input class="cal-search-input" id="calSearchInput" type="text"
+      placeholder="Rechercher une équipe…"
+      value="${calSearchText}"
+      oninput="calOnSearch(this.value)"
+      autocomplete="off" autocorrect="off" spellcheck="false">
+    <button class="cal-search-clear ${calSearchText ? 'visible' : ''}" id="calSearchClear" onclick="calClearSearch()">✕</button>
+  </div>`);
+
   // ── Filtrage ──
   let filtered = [...matches];
   if (calActiveDay !== 'all') filtered = filtered.filter(m => m.jour === calActiveDay);
   if (calActiveTerrain !== 0) filtered = filtered.filter(m => m.terrain === calActiveTerrain);
+  if (calSearchText) {
+    const q = calSearchText.toLowerCase().trim();
+    filtered = filtered.filter(m => {
+      if (m.type === 'animation') return m.nom && m.nom.toLowerCase().includes(q);
+      return (m.eq1 && m.eq1.toLowerCase().includes(q)) ||
+             (m.eq2 && m.eq2.toLowerCase().includes(q));
+    });
+  }
 
   if (!filtered.length) {
     el.innerHTML = emptyHTML('Aucun match pour cette sélection.');
@@ -1020,10 +1064,9 @@ function renderCalFull(matches, el, filterEl) {
               <span class="mc-time">${m.heure}</span>
               <div class="mc-badges">
                 <span class="mc-terrain ${tClass}">${tDot} ${tLabel}</span>
-                <span class="mc-badge-anim">🎯 Animation</span>
               </div>
             </div>
-            <div class="mc-anim-name" style="grid-column:1/-1;text-align:center;font-family:var(--font-title);font-size:1.15rem;font-weight:800;color:var(--yellow);letter-spacing:.04em;text-transform:uppercase;padding:.2rem 0 .1rem">${m.nom}</div>
+            <div class="mc-anim-name" style="grid-column:1/-1;text-align:center;font-family:var(--font-title);font-size:1.15rem;font-weight:800;color:var(--yellow);letter-spacing:.04em;text-transform:uppercase;padding:.3rem 0 .15rem">${m.nom}</div>
           </div>`;
         } else {
           // ── Card match ──
@@ -1071,6 +1114,21 @@ function calSetDay(day) {
 
 function calSetTerrain(t) {
   calActiveTerrain = t;
+  renderCalFull(calData, document.getElementById('calendrierContent'), document.getElementById('filterDay'));
+}
+
+function calOnSearch(val) {
+  calSearchText = val;
+  const clearBtn = document.getElementById('calSearchClear');
+  if (clearBtn) clearBtn.classList.toggle('visible', !!val);
+  renderCalFull(calData, document.getElementById('calendrierContent'), document.getElementById('filterDay'));
+  // Restore focus on input after re-render
+  const inp = document.getElementById('calSearchInput');
+  if (inp) { inp.focus(); inp.setSelectionRange(inp.value.length, inp.value.length); }
+}
+
+function calClearSearch() {
+  calSearchText = '';
   renderCalFull(calData, document.getElementById('calendrierContent'), document.getElementById('filterDay'));
 }
 
