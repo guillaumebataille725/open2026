@@ -493,6 +493,174 @@ tbody td:not(:first-child):not(:nth-child(2)) { text-align: center; color: var(-
   color: var(--blue);
   white-space: nowrap;
 }
+
+/* ── CALENDRIER v2 ── */
+.cal-filters {
+  display: flex; flex-direction: column; gap: .6rem; margin-bottom: 1.75rem;
+}
+.cal-filter-row {
+  display: flex; gap: .4rem; flex-wrap: nowrap; overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.cal-filter-row::-webkit-scrollbar { display: none; }
+.filter-label {
+  font-family: var(--font-title); font-size: .68rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .12em; color: var(--muted);
+  align-self: center; white-space: nowrap; flex-shrink: 0; min-width: 56px;
+}
+.filter-chip-day { border-radius: 6px; }
+.filter-chip-terrain {
+  border-radius: 6px;
+}
+.filter-chip-terrain.t1.active { background: #3db8f520; border-color: var(--blue); color: var(--blue); }
+.filter-chip-terrain.t2.active { background: #f5c50a20; border-color: var(--yellow); color: var(--yellow); }
+.filter-chip-terrain.t3.active { background: #22c55e20; border-color: var(--win); color: var(--win); }
+.filter-chip-terrain.t1:hover { border-color: var(--blue); color: var(--blue); }
+.filter-chip-terrain.t2:hover { border-color: var(--yellow); color: var(--yellow); }
+.filter-chip-terrain.t3:hover { border-color: var(--win); color: var(--win); }
+
+/* ── MATCH CARD v2 ── */
+.match-card-v2 {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 1rem 1.1rem; display: grid;
+  grid-template-columns: 72px 1fr 72px;
+  grid-template-rows: auto auto;
+  gap: 0 .5rem;
+  align-items: center;
+  transition: border-color .2s, transform .15s, box-shadow .15s;
+  animation: fadeUp .25s ease backwards;
+  cursor: default;
+}
+.match-card-v2:hover {
+  border-color: var(--blue-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(61,184,245,.07);
+}
+.match-card-v2.played { border-left: 3px solid var(--border); }
+.match-card-v2.played:hover { border-left-color: var(--yellow); }
+
+.mc-header {
+  grid-column: 1 / -1;
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: .55rem;
+}
+.mc-time {
+  font-family: var(--font-title); font-size: 1.3rem; font-weight: 800;
+  color: var(--yellow); letter-spacing: .03em; line-height: 1;
+}
+.mc-badges { display: flex; gap: .4rem; align-items: center; }
+.mc-terrain {
+  font-family: var(--font-title); font-size: .68rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .07em;
+  padding: .18rem .6rem; border-radius: 4px; white-space: nowrap;
+}
+.mc-badge-played {
+  font-family: var(--font-title); font-size: .62rem; font-weight: 700;
+  letter-spacing: .1em; text-transform: uppercase;
+  color: var(--win); background: #22c55e12; border: 1px solid #22c55e30;
+  padding: .15rem .55rem; border-radius: 4px;
+}
+.mc-badge-upcoming {
+  font-family: var(--font-title); font-size: .62rem; font-weight: 700;
+  letter-spacing: .1em; text-transform: uppercase;
+  color: var(--muted2); background: var(--surface2); border: 1px solid var(--border);
+  padding: .15rem .55rem; border-radius: 4px;
+}
+
+/* Score block */
+.mc-eq1-name, .mc-eq2-name {
+  font-weight: 700; font-size: .88rem; line-height: 1.25;
+  max-width: 100%; overflow: hidden; text-overflow: ellipsis;
+}
+.mc-eq1-name { text-align: left; }
+.mc-eq2-name { text-align: right; }
+.mc-eq1-name.winner, .mc-eq2-name.winner { color: var(--win); }
+.mc-eq1-name.loser, .mc-eq2-name.loser { color: var(--muted); }
+
+.mc-scores {
+  display: flex; align-items: center; justify-content: center;
+  gap: .25rem;
+}
+.mc-score-val {
+  font-family: var(--font-title); font-size: 2.1rem; font-weight: 900;
+  line-height: 1; min-width: 2rem; text-align: center;
+}
+.mc-score-val.w { color: var(--win); }
+.mc-score-val.d { color: var(--yellow); }
+.mc-score-val.l { color: var(--muted); }
+.mc-score-sep { color: var(--muted); font-size: .85rem; margin: 0 .1rem; }
+.mc-pending-pill {
+  font-family: var(--font-title); font-size: .7rem; font-weight: 700;
+  letter-spacing: .08em; text-transform: uppercase;
+  color: var(--muted2); background: var(--surface2); border: 1px solid var(--border);
+  padding: .3rem .8rem; border-radius: 20px; white-space: nowrap;
+}
+.mc-draw-note {
+  grid-column: 1 / -1; text-align: center; margin-top: .35rem;
+}
+.mc-draw-badge {
+  font-family: var(--font-title); font-size: .62rem; font-weight: 700;
+  letter-spacing: .1em; text-transform: uppercase;
+  color: var(--yellow); background: var(--yellow-dim); border: 1px solid #f5c50a30;
+  padding: .18rem .6rem; border-radius: 4px; display: inline-block;
+}
+
+/* Day section header v2 */
+.day-header-v2 {
+  display: flex; align-items: center; gap: .75rem; margin: 2.5rem 0 .9rem;
+}
+.day-header-v2 h2 {
+  font-family: var(--font-title); font-size: 1.3rem; font-weight: 800;
+  text-transform: uppercase; letter-spacing: .07em; color: var(--blue);
+  white-space: nowrap;
+}
+.day-header-v2 .dhv2-line { flex: 1; height: 1px; background: var(--border); }
+.day-header-v2 .dhv2-info {
+  font-family: var(--font-title); font-size: .68rem; font-weight: 700;
+  color: var(--muted); white-space: nowrap;
+  letter-spacing: .06em;
+}
+
+/* Stats bar v2 */
+.cal-stats-row {
+  display: grid; grid-template-columns: repeat(4,1fr);
+  gap: .6rem; margin-bottom: 1.75rem;
+}
+.cal-stat {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: .85rem 1rem;
+  animation: fadeUp .3s ease backwards;
+}
+.cal-stat-label { font-size: .63rem; font-weight: 600; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); margin-bottom: .25rem; }
+.cal-stat-val { font-family: var(--font-title); font-size: 2rem; font-weight: 800; line-height: 1; color: var(--yellow); }
+.cal-stat-val.blue { color: var(--blue); }
+.cal-stat-val.green { color: var(--win); }
+.cal-stat-val.muted { color: var(--muted2); }
+
+/* Progress bar */
+.cal-progress {
+  height: 3px; background: var(--border); border-radius: 2px; margin-top: .5rem; overflow: hidden;
+}
+.cal-progress-fill {
+  height: 100%; background: linear-gradient(90deg, var(--blue), var(--yellow));
+  border-radius: 2px; transition: width .6s ease;
+}
+
+@media (max-width:699px) {
+  .cal-stats-row { grid-template-columns: repeat(2,1fr); gap: 8px; }
+  .cal-stat { padding: 14px 16px; }
+  .cal-stat-val { font-size: 28px !important; }
+  .match-card-v2 { padding: 14px 16px; grid-template-columns: 64px 1fr 64px; }
+  .mc-time { font-size: 22px !important; }
+  .mc-score-val { font-size: 38px !important; }
+  .mc-eq1-name, .mc-eq2-name { font-size: 15px !important; }
+  .mc-terrain { font-size: 12px !important; }
+  .day-header-v2 { margin: 22px 0 10px; }
+  .day-header-v2 h2 { font-size: 20px !important; }
+  .cal-filters { gap: .5rem; }
+  .filter-label { min-width: 48px; font-size: .62rem; }
+}
+
 </style>
 </head>
 <body>
@@ -718,97 +886,164 @@ function loadSection(id, force=false) {
   }
 }
 
-// ── CALENDRIER ──
+// ── CALENDRIER v2 ──
+let calActiveDay = 'all';    // filtre jour : 'all' | 'Vendredi' | 'Samedi' | …
+let calActiveTerrain = 0;    // filtre terrain : 0=tous | 1 | 2 | 3
+
 async function renderCalendrier(force=false) {
   const el = document.getElementById('calendrierContent');
   const filterEl = document.getElementById('filterDay');
-  if (!force && calData) { renderMatchList(calData, el); return; }
+  if (!force && calData) { renderCalFull(calData, el, filterEl); return; }
   el.innerHTML = loadingHTML();
+  filterEl.innerHTML = '';
   try {
     const data = await callAPI('getCalendrier');
     calData = data.matches || [];
     updateTimestamp();
-
-    const played = calData.filter(m => m.sc1 !== null).length;
     document.getElementById('matchCount').textContent = calData.length + ' matchs';
-
-    const days = ['all', ...new Set(calData.map(m => m.jour).filter(Boolean))];
-    filterEl.innerHTML = days.map(d =>
-      `<button class="filter-chip ${d===activeDay?'active':''}" onclick="filterByDay('${d}')">${d==='all'?'🗓 Tous':d}</button>`
-    ).join('') +
-    `<button class="filter-chip ${activeDay==='t1'?'active':''}" onclick="filterByDay('t1')">🟧 Terrain 1</button>
-     <button class="filter-chip ${activeDay==='t2'?'active':''}" onclick="filterByDay('t2')">🟦 Terrain 2</button>
-     <button class="filter-chip ${activeDay==='t3'?'active':''}" onclick="filterByDay('t3')">🟩 Terrain 3</button>`;
-
-    renderMatchList(calData, el);
+    renderCalFull(calData, el, filterEl);
   } catch(e) { el.innerHTML = errorHTML(e.message); }
 }
 
-function filterByDay(day) {
-  activeDay = day;
-  document.querySelectorAll('#filterDay .filter-chip').forEach(c => c.classList.remove('active'));
-  event.target.classList.add('active');
-  renderMatchList(calData, document.getElementById('calendrierContent'));
-}
+function renderCalFull(matches, el, filterEl) {
+  // ── Barre de filtres ──
+  const days = [...new Set(matches.map(m => m.jour).filter(Boolean))];
+  const terrainLabels = { 1: '🟧 Terrain 1', 2: '🟦 Terrain 2', 3: '🟩 Terrain 3' };
+  const terrains = [...new Set(matches.map(m => m.terrain).filter(Boolean))].sort();
 
-function renderMatchList(matches, el) {
-  let filtered = [...matches];
-  if (activeDay === 't1') filtered = filtered.filter(m => m.terrain === 1);
-  else if (activeDay === 't2') filtered = filtered.filter(m => m.terrain === 2);
-  else if (activeDay === 't3') filtered = filtered.filter(m => m.terrain === 3);
-  else if (activeDay !== 'all') filtered = filtered.filter(m => m.jour === activeDay);
-
-  if (!filtered.length) { el.innerHTML = emptyHTML(); return; }
-
-  const played = filtered.filter(m => m.sc1 !== null).length;
-  const terrains = [...new Set(filtered.map(m=>m.terrain))].length;
-
-  let html = `<div class="stats-row">
-    <div class="stat-card" style="animation-delay:.05s"><div class="stat-label">Total matchs</div><div class="stat-val">${filtered.length}</div></div>
-    <div class="stat-card" style="animation-delay:.1s"><div class="stat-label">Joués</div><div class="stat-val green">${played}</div></div>
-    <div class="stat-card" style="animation-delay:.15s"><div class="stat-label">À venir</div><div class="stat-val blue">${filtered.length-played}</div></div>
-    <div class="stat-card" style="animation-delay:.2s"><div class="stat-label">Terrains</div><div class="stat-val muted">${terrains}</div></div>
+  filterEl.innerHTML = `
+  <div class="cal-filters">
+    <div class="cal-filter-row">
+      <span class="filter-label">Jour</span>
+      <button class="filter-chip filter-chip-day ${calActiveDay==='all'?'active':''}" onclick="calSetDay('all')">🗓 Tous</button>
+      ${days.map(d => `<button class="filter-chip filter-chip-day ${calActiveDay===d?'active':''}" onclick="calSetDay('${d}')">${d}</button>`).join('')}
+    </div>
+    <div class="cal-filter-row">
+      <span class="filter-label">Terrain</span>
+      <button class="filter-chip ${calActiveTerrain===0?'active':''}" onclick="calSetTerrain(0)">Tous</button>
+      ${terrains.map(t => `<button class="filter-chip filter-chip-terrain t${t} ${calActiveTerrain===t?'active':''}" onclick="calSetTerrain(${t})">${terrainLabels[t]||'T'+t}</button>`).join('')}
+    </div>
   </div>`;
 
-  const byDay = {};
-  filtered.forEach(m => { const k = m.jour||'?'; if(!byDay[k]) byDay[k]=[]; byDay[k].push(m); });
+  // ── Filtrage ──
+  let filtered = [...matches];
+  if (calActiveDay !== 'all') filtered = filtered.filter(m => m.jour === calActiveDay);
+  if (calActiveTerrain !== 0) filtered = filtered.filter(m => m.terrain === calActiveTerrain);
 
-  let delay = 0;
-  for (const [jour, list] of Object.entries(byDay)) {
-    html += `<div class="day-header"><h2>📅 ${jour}</h2><div class="line"></div><span class="count">${list.length} matchs</span></div>`;
-    html += '<div class="cards-grid">';
-    list.forEach(m => {
-      delay++;
-      const played = m.sc1 !== null && m.sc2 !== null;
-      const draw = played && m.sc1 === m.sc2;
-      const w1 = played && !draw && m.sc1 > m.sc2;
-      const w2 = played && !draw && m.sc2 > m.sc1;
-      const tClass = ['','terrain-1','terrain-2','terrain-3'][m.terrain]||'terrain-1';
-      const tLabel = ['','T1','T2','T3'][m.terrain]||'T?';
-      html += `
-      <div class="match-card ${played?'has-result':''}" style="animation-delay:${delay*.025}s">
-        <div class="match-meta">
-          <span class="match-time">${m.heure}</span>
-          <span class="match-terrain ${tClass}">${tLabel}</span>
-        </div>
-        <div class="match-score">
-          <div class="team-name left ${w1?'winner':played&&!draw?'loser':''}">${m.eq1}</div>
-          <div class="score-block">
-            ${played
-              ? `<span class="score-val ${w1?'winner':draw?'draw':'loser'}">${m.sc1}</span>
-                 <span class="score-sep">—</span>
-                 <span class="score-val ${w2?'winner':draw?'draw':'loser'}">${m.sc2}</span>`
-              : `<span class="badge-pending">À venir</span>`}
-          </div>
-          <div class="team-name right ${w2?'winner':played&&!draw?'loser':''}">${m.eq2}</div>
-        </div>
-        ${draw?'<div style="text-align:center"><span class="badge-draw">Égalité</span></div>':''}
-      </div>`;
-    });
-    html += '</div>';
+  if (!filtered.length) {
+    el.innerHTML = emptyHTML('Aucun match pour cette sélection.');
+    return;
   }
+
+  // ── Stats ──
+  const nbPlayed = filtered.filter(m => m.sc1 !== null && m.sc2 !== null).length;
+  const nbPending = filtered.length - nbPlayed;
+  const progress = filtered.length ? Math.round(nbPlayed / filtered.length * 100) : 0;
+  const nbTerrains = [...new Set(filtered.map(m => m.terrain))].length;
+
+  let html = `<div class="cal-stats-row">
+    <div class="cal-stat" style="animation-delay:.04s">
+      <div class="cal-stat-label">Total matchs</div>
+      <div class="cal-stat-val">${filtered.length}</div>
+      <div class="cal-progress"><div class="cal-progress-fill" style="width:${progress}%"></div></div>
+    </div>
+    <div class="cal-stat" style="animation-delay:.08s">
+      <div class="cal-stat-label">Joués</div>
+      <div class="cal-stat-val green">${nbPlayed}</div>
+    </div>
+    <div class="cal-stat" style="animation-delay:.12s">
+      <div class="cal-stat-label">À venir</div>
+      <div class="cal-stat-val blue">${nbPending}</div>
+    </div>
+    <div class="cal-stat" style="animation-delay:.16s">
+      <div class="cal-stat-label">Terrains</div>
+      <div class="cal-stat-val muted">${nbTerrains}</div>
+    </div>
+  </div>`;
+
+  // ── Regroupement par jour puis par créneau horaire ──
+  // Tri : d'abord par jour (ordre d'apparition dans calData), puis heure
+  const dayOrder = [...new Set(matches.map(m => m.jour).filter(Boolean))];
+  const byDay = {};
+  filtered.forEach(m => {
+    const k = m.jour || '?';
+    if (!byDay[k]) byDay[k] = {};
+    if (!byDay[k][m.heure]) byDay[k][m.heure] = [];
+    byDay[k][m.heure].push(m);
+  });
+
+  // Ordre des jours selon ordre naturel du planning
+  const sortedDays = dayOrder.filter(d => byDay[d]);
+
+  let cardDelay = 0;
+  for (const jour of sortedDays) {
+    const heures = Object.keys(byDay[jour]).sort();
+    const totalJour = heures.reduce((acc, h) => acc + byDay[jour][h].length, 0);
+    const jouésJour = heures.reduce((acc, h) => acc + byDay[jour][h].filter(m => m.sc1 !== null && m.sc2 !== null).length, 0);
+
+    html += `<div class="day-header-v2">
+      <h2>📅 ${jour}</h2>
+      <div class="dhv2-line"></div>
+      <span class="dhv2-info">${jouésJour}/${totalJour} matchs joués</span>
+    </div>`;
+
+    for (const heure of heures) {
+      const mList = byDay[jour][heure];
+      html += '<div class="cards-grid">';
+      mList.forEach(m => {
+        cardDelay++;
+        const played = m.sc1 !== null && m.sc2 !== null;
+        const draw   = played && m.sc1 === m.sc2;
+        const w1     = played && !draw && m.sc1 > m.sc2;
+        const w2     = played && !draw && m.sc2 > m.sc1;
+
+        const tClassMap = { 1: 'terrain-1', 2: 'terrain-2', 3: 'terrain-3' };
+        const tClass    = tClassMap[m.terrain] || 'terrain-1';
+        const tLabel    = { 1: 'Terrain 1', 2: 'Terrain 2', 3: 'Terrain 3' }[m.terrain] || 'T?';
+        const tDot      = { 1: '🟧', 2: '🟦', 3: '🟩' }[m.terrain] || '';
+
+        html += `
+        <div class="match-card-v2 ${played ? 'played' : ''}" style="animation-delay:${cardDelay * .022}s">
+          <div class="mc-header">
+            <span class="mc-time">${m.heure}</span>
+            <div class="mc-badges">
+              <span class="mc-terrain ${tClass}">${tDot} ${tLabel}</span>
+              ${played ? '<span class="mc-badge-played">✓ Joué</span>' : '<span class="mc-badge-upcoming">À venir</span>'}
+            </div>
+          </div>
+          <div class="mc-eq1-name ${w1 ? 'winner' : played && !draw ? 'loser' : ''}">${m.eq1}</div>
+          <div class="mc-scores">
+            ${played
+              ? `<span class="mc-score-val ${w1 ? 'w' : draw ? 'd' : 'l'}">${m.sc1}</span>
+                 <span class="mc-score-sep">–</span>
+                 <span class="mc-score-val ${w2 ? 'w' : draw ? 'd' : 'l'}">${m.sc2}</span>`
+              : `<span class="mc-pending-pill">VS</span>`
+            }
+          </div>
+          <div class="mc-eq2-name ${w2 ? 'winner' : played && !draw ? 'loser' : ''}">${m.eq2}</div>
+          ${draw ? '<div class="mc-draw-note"><span class="mc-draw-badge">Égalité</span></div>' : ''}
+        </div>`;
+      });
+      html += '</div>';
+    }
+  }
+
   el.innerHTML = html;
 }
+
+function calSetDay(day) {
+  calActiveDay = day;
+  renderCalFull(calData, document.getElementById('calendrierContent'), document.getElementById('filterDay'));
+}
+
+function calSetTerrain(t) {
+  calActiveTerrain = t;
+  renderCalFull(calData, document.getElementById('calendrierContent'), document.getElementById('filterDay'));
+}
+
+// Compat : ancienne variable activeDay utilisée dans d'autres endroits
+function filterByDay(day) { calSetDay(day); }
+function renderMatchList(matches, el) { renderCalFull(matches, el, document.getElementById('filterDay')); }
 
 // ── POULES ──
 async function renderPoules(force=false) {
