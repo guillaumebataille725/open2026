@@ -576,7 +576,7 @@ tbody td:not(:first-child):not(:nth-child(2)) { text-align: center; color: var(-
 </main>
 
 <script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyASx-40oswpSGaXok18OUUzkMrW2NcEJAd8S2uG17o39jztvmfEMP-gyhjbUCmkPzH/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxmqTxV5n4HQ32GXGxg_Zmh2I20gD7wBfX_yf1OBo9Cqsy6A4fZmmD5Let1HwKbzvq2/exec';
 
 const cache = {};
 let activeSection = 'calendrier';
@@ -929,16 +929,23 @@ async function renderClassements(force=false) {
 
       function pouleTable(nom, equipes, color, delay) {
         if (!equipes || !equipes.length) return '';
+        const allRanked = equipes.every(e => e.rang !== null && e.rang !== undefined && e.rang !== 999);
+        const sorted = allRanked ? [...equipes] : equipes;
         return `<div class="classement-block" style="animation-delay:${delay}s">
           <div class="section-head" style="margin-bottom:1rem">
             <h2 style="font-size:1.4rem"><span style="color:${color}">${nom}</span></h2>
+            ${!allRanked ? `<p style="font-size:.75rem;color:var(--muted);margin-top:.3rem">Classement en attente</p>` : ''}
           </div>
           <div class="table-wrap"><table>
             <thead><tr><th>#</th><th>Équipe</th></tr></thead>
-            <tbody>${equipes.map((r,i) => {
-              const rc = i===0?'gold':i===1?'silver':i===2?'bronze':'';
+            <tbody>${sorted.map((r, i) => {
+              const pos = allRanked ? r.rang : null;
+              const rc  = pos === 1 ? 'gold' : pos === 2 ? 'silver' : pos === 3 ? 'bronze' : '';
               return `<tr style="animation-delay:${i*.04}s">
-                <td><span class="rank ${rc}">${i+1}</span></td>
+                <td>${pos !== null
+                  ? `<span class="rank ${rc}">${pos}</span>`
+                  : `<span style="color:var(--muted);font-size:.75rem">—</span>`
+                }</td>
                 <td><strong>${r.eq}</strong></td>
               </tr>`;
             }).join('')}</tbody>
@@ -948,11 +955,11 @@ async function renderClassements(force=false) {
 
       // Grille COMPET (2 colonnes sur tablette+)
       if ((activeFilter === 'all' || activeFilter === 'compet') && hasCompet) {
-        html += `<div class="section-head"><h2><span style="color:var(--yellow)">⚡</span> Catégorie COMPET</h2></div>`;
+        html += `<div class="section-head"><h2><span style="color:var(--blue)">⚡</span> Catégorie COMPET</h2></div>`;
         html += '<div class="classements-grid">';
         let d = 0;
         for (const [nom, equipes] of Object.entries(compet)) {
-          html += pouleTable(nom, equipes, 'var(--yellow)', d * 0.07);
+          html += pouleTable(nom, equipes, 'var(--blue)', d * 0.07);
           d++;
         }
         html += '</div>';
@@ -960,11 +967,11 @@ async function renderClassements(force=false) {
 
       // Grille LOISIR
       if ((activeFilter === 'all' || activeFilter === 'loisir') && hasLoisir) {
-        html += `<div class="section-head" style="margin-top:2.5rem"><h2><span style="color:var(--blue)">🎯</span> Catégorie LOISIR</h2></div>`;
+        html += `<div class="section-head" style="margin-top:2.5rem"><h2><span style="color:var(--yellow)">🎯</span> Catégorie LOISIR</h2></div>`;
         html += '<div class="classements-grid">';
         let d = 0;
         for (const [nom, equipes] of Object.entries(loisir)) {
-          html += pouleTable(nom, equipes, 'var(--blue)', d * 0.07);
+          html += pouleTable(nom, equipes, 'var(--yellow)', d * 0.07);
           d++;
         }
         html += '</div>';
@@ -1007,7 +1014,7 @@ async function renderPhase2(force=false) {
     }
 
     // Couleurs par catégorie
-    const colors = { 'Elite A': 'var(--yellow)', 'Elite B': 'var(--yellow)', 'Inter A': 'var(--blue)', 'Inter B': 'var(--blue)' };
+    const colors = { 'Elite A': 'var(--blue)', 'Elite B': 'var(--blue)', 'Inter A': 'var(--yellow)', 'Inter B': 'var(--yellow)' };
 
     function pouleCard(nom, equipes, delay) {
       const color = colors[nom] || 'var(--yellow)';
