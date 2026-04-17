@@ -1115,5 +1115,51 @@ async function renderPhasefinale(force=false) {
     el.dataset.loaded = '1';
   } catch(e) { el.innerHTML = errorHTML(e.message); }
 }
+function genericMatchesHTML(matches, title) {
+  let html = `<div class="day-header" style="margin-top:0"><h2>${title}</h2><div class="line"></div><span class="count">${matches.length} matchs</span></div><div class="cards-grid">`;
+  matches.forEach((m,i) => {
+    const played = m.sc1!==null && m.sc2!==null;
+    const draw = played && m.sc1===m.sc2;
+    const w1 = played && !draw && m.sc1>m.sc2;
+    const w2 = played && !draw && m.sc2>m.sc1;
+    html += `<div class="match-card ${played?'has-result':''}" style="animation-delay:${i*.03}s">
+      <div class="match-meta">
+        <span class="match-time">${m.heure||m.label||''}</span>
+        ${m.groupe?`<span class="match-terrain terrain-1">${m.groupe}</span>`:''}
+      </div>
+      <div class="match-teams">
+        <div class="team ${w1?'win':w2?'loss':''}">
+          <span class="team-name">${m.eq1}</span>
+          <span class="score ${w1?'win':''}">${played?m.sc1:'–'}</span>
+        </div>
+        <div class="vs-sep">${played?(draw?'<span class="badge-draw">NUL</span>':'VS'):'VS'}</div>
+        <div class="team right ${w2?'win':w1?'loss':''}">
+          <span class="score ${w2?'win':''}">${played?m.sc2:'–'}</span>
+          <span class="team-name">${m.eq2}</span>
+        </div>
+      </div>
+    </div>`;
+  });
+  html += '</div>';
+  return html;
+}
 
->
+function loadingHTML() {
+  return '<div class="loading"><div class="loader"></div><p>Chargement…</p></div>';
+}
+
+function errorHTML(m) {
+  return `<div class="empty-state"><div class="icon">⚠️</div><p style="color:var(--loss)">Erreur de chargement</p><p style="margin-top:.5rem;font-size:.8rem">${m}</p></div>`;
+}
+
+function emptyHTML(m) {
+  return `<div class="empty-state"><div class="icon">📋</div><p>${m}</p></div>`;
+}
+
+buildNav();
+document.getElementById('mobileLogo').src = document.querySelector('.logo-wrap img').src;
+loadSection('calendrier');
+startAutoRefresh();
+</script>
+</body>
+</html>
