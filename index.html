@@ -272,7 +272,7 @@ main { max-width: 1400px; margin: 0 auto; padding: 2.5rem 2rem; position: relati
 }
 .terrain-1 { background: #3db8f512; border: 1px solid #3db8f530; color: var(--blue); }
 .terrain-2 { background: #f5c50a12; border: 1px solid #f5c50a30; color: var(--yellow); }
-.terrain-3 { background: #22c55e12; border: 1px solid #22c55e30; color: #22c55e; }
+.terrain-3 { background: rgba(249,115,22,.1); border: 1px solid rgba(249,115,22,.3); color: #f97316; }
 
 .match-score {
   display: grid; grid-template-columns: 1fr auto 1fr;
@@ -514,10 +514,10 @@ tbody td:not(:first-child):not(:nth-child(2)) { text-align: center; color: var(-
 }
 .filter-chip-terrain.t1.active { background: #3db8f520; border-color: var(--blue); color: var(--blue); }
 .filter-chip-terrain.t2.active { background: #f5c50a20; border-color: var(--yellow); color: var(--yellow); }
-.filter-chip-terrain.t3.active { background: #22c55e20; border-color: var(--win); color: var(--win); }
+.filter-chip-terrain.t3.active { background: rgba(249,115,22,.12); border-color: #f97316; color: #f97316; }
 .filter-chip-terrain.t1:hover { border-color: var(--blue); color: var(--blue); }
 .filter-chip-terrain.t2:hover { border-color: var(--yellow); color: var(--yellow); }
-.filter-chip-terrain.t3:hover { border-color: var(--win); color: var(--win); }
+.filter-chip-terrain.t3:hover { border-color: #f97316; color: #f97316; }
 
 /* ── MATCH CARD v2 ── */
 .match-card-v2 {
@@ -826,8 +826,8 @@ function switchSectionMobile(id) {
   switchSection(id);
 }
 
-// ── AUTO-REFRESH TOUTES LES 180s ──
-const AUTO_REFRESH_INTERVAL = 180; // secondes
+// ── AUTO-REFRESH TOUTES LES 30s ──
+const AUTO_REFRESH_INTERVAL = 30; // secondes
 let countdownValue = AUTO_REFRESH_INTERVAL;
 let countdownTimer = null;
 let autoRefreshTimer = null;
@@ -956,7 +956,7 @@ function renderCalFull(matches, el, filterEl) {
   // ── Barre de filtres double ──
   const days = [...new Set(matches.map(m => m.jour).filter(Boolean))];
   const terrainLabels = { 1: 'Terrain 1', 2: 'Terrain 2', 3: 'Terrain 3' };
-  const terrainDots   = { 1: '🟧', 2: '🟦', 3: '🟩' };
+  const terrainDots   = { 1: '🟦', 2: '🟨', 3: '🟧' };
   const terrains = [...new Set(matches.map(m => m.terrain).filter(Boolean))].sort();
 
   // Filtres sans "Tous" — toggle : re-cliquer désélectionne
