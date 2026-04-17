@@ -699,6 +699,13 @@ tbody td:not(:first-child):not(:nth-child(2)) { text-align: center; color: var(-
   .cal-search-input { font-size: 16px; padding: 10px 14px 10px 36px; }
 }
 
+
+/* Status filter chips */
+.filter-chip-status.played.active { background: #22c55e18; border-color: var(--win); color: var(--win); }
+.filter-chip-status.upcoming.active { background: var(--blue-dim); border-color: var(--blue); color: var(--blue); }
+.filter-chip-status.played:hover { border-color: var(--win); color: var(--win); }
+.filter-chip-status.upcoming:hover { border-color: var(--blue); color: var(--blue); }
+
 </style>
 </head>
 <body>
@@ -819,8 +826,8 @@ function switchSectionMobile(id) {
   switchSection(id);
 }
 
-// ── AUTO-REFRESH TOUTES LES 180s ──
-const AUTO_REFRESH_INTERVAL = 180; // secondes
+// ── AUTO-REFRESH TOUTES LES 30s ──
+const AUTO_REFRESH_INTERVAL = 30; // secondes
 let countdownValue = AUTO_REFRESH_INTERVAL;
 let countdownTimer = null;
 let autoRefreshTimer = null;
@@ -928,6 +935,7 @@ function loadSection(id, force=false) {
 let calActiveDay = 'all';    // filtre jour : 'all' | 'Vendredi' | 'Samedi' | …
 let calActiveTerrain = 0;    // filtre terrain : 0=tous | 1 | 2 | 3
 let calSearchText = '';      // filtre recherche équipe
+let calActiveStatus = null;  // filtre statut : null=tous | 'played' | 'upcoming'
 
 async function renderCalendrier(force=false) {
   const el = document.getElementById('calendrierContent');
@@ -962,6 +970,11 @@ function renderCalFull(matches, el, filterEl) {
       <span class="filter-label">Terrain</span>
       ${terrains.map(t => `<button class="filter-chip filter-chip-terrain t${t} ${calActiveTerrain===t?'active':''}" onclick="calSetTerrain(${t})">${terrainDots[t]||''} ${terrainLabels[t]||'T'+t}</button>`).join('')}
     </div>
+    <div class="cal-filter-row">
+      <span class="filter-label">Statut</span>
+      <button class="filter-chip filter-chip-status played ${calActiveStatus==='played'?'active':''}" onclick="calSetStatus('played')">✓ Joués</button>
+      <button class="filter-chip filter-chip-status upcoming ${calActiveStatus==='upcoming'?'active':''}" onclick="calSetStatus('upcoming')">⏳ À venir</button>
+    </div>
     <div class="cal-search-wrap" id="calSearchWrap">
       <span class="cal-search-icon">🔍</span>
       <input class="cal-search-input" id="calSearchInput" type="text"
@@ -977,6 +990,11 @@ function renderCalFull(matches, el, filterEl) {
   let filtered = [...matches];
   if (calActiveDay !== 'all') filtered = filtered.filter(m => m.jour === calActiveDay);
   if (calActiveTerrain !== 0) filtered = filtered.filter(m => m.terrain === calActiveTerrain);
+  if (calActiveStatus === 'played') {
+    filtered = filtered.filter(m => m.type === 'animation' || (m.sc1 !== null && m.sc2 !== null));
+  } else if (calActiveStatus === 'upcoming') {
+    filtered = filtered.filter(m => m.type === 'animation' || (m.sc1 === null && m.sc2 === null));
+  }
   if (calSearchText) {
     const q = calSearchText.toLowerCase().trim();
     filtered = filtered.filter(m => {
@@ -1112,6 +1130,11 @@ function calSetDay(day) {
 function calSetTerrain(t) {
   // Toggle : re-cliquer sur le filtre actif le désélectionne
   calActiveTerrain = (calActiveTerrain === t) ? 0 : t;
+  renderCalFull(calData, document.getElementById('calendrierContent'), document.getElementById('filterDay'));
+}
+
+function calSetStatus(s) {
+  calActiveStatus = (calActiveStatus === s) ? null : s;
   renderCalFull(calData, document.getElementById('calendrierContent'), document.getElementById('filterDay'));
 }
 
