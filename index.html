@@ -706,6 +706,18 @@ tbody td:not(:first-child):not(:nth-child(2)) { text-align: center; color: var(-
 .filter-chip-status.played:hover { border-color: var(--win); color: var(--win); }
 .filter-chip-status.upcoming:hover { border-color: var(--blue); color: var(--blue); }
 
+
+/* Heure souhaitée badge dans la card équipe */
+.equipe-header {
+  display: flex; align-items: center; justify-content: space-between; gap: .5rem;
+}
+.equipe-heure-badge {
+  font-family: var(--font-title); font-size: .68rem; font-weight: 700;
+  letter-spacing: .06em; text-transform: uppercase; white-space: nowrap;
+  padding: .2rem .6rem; border-radius: 4px;
+  background: var(--yellow-dim); border: 1px solid #f5c50a40; color: var(--yellow);
+}
+
 </style>
 </head>
 <body>
@@ -789,7 +801,7 @@ tbody td:not(:first-child):not(:nth-child(2)) { text-align: center; color: var(-
 </main>
 
 <script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyX7jGzGKzpDRauSZONGhuiHWlJs7ie1MoC2KwSsxuSB8yu1w-ftX9Yqm7uYLg4MUwz/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyzQiIF6UlOEfetcd955Z5OpVoxKgxeE4tXRRNzqt798RH3GEU-dMRnYPPsSCSn8tov/exec';
 
 const cache = {};
 let activeSection = 'calendrier';
@@ -1210,7 +1222,10 @@ async function renderPoules(force=false) {
         html += '<div class="equipes-grid">';
         equipesCompet.forEach((eq, i) => {
           html += `<div class="equipe-card" style="animation-delay:${i*.03}s">
-            <div class="equipe-header"><span class="equipe-nom">${eq.nom}</span></div>
+            <div class="equipe-header">
+              <span class="equipe-nom">${eq.nom}</span>
+              ${eq.heureSouhaitee ? `<span class="equipe-heure-badge">⏰ ${eq.heureSouhaitee}</span>` : ''}
+            </div>
             <div class="equipe-joueurs">
               ${eq.joueurs.length
                 ? eq.joueurs.map(j => `<span class="joueur-tag">${j}</span>`).join('')
@@ -1247,7 +1262,10 @@ async function renderPoules(force=false) {
         html += '<div class="equipes-grid">';
         equipesLoisir.forEach((eq, i) => {
           html += `<div class="equipe-card" style="animation-delay:${i*.03}s">
-            <div class="equipe-header"><span class="equipe-nom">${eq.nom}</span></div>
+            <div class="equipe-header">
+              <span class="equipe-nom">${eq.nom}</span>
+              ${eq.heureSouhaitee ? `<span class="equipe-heure-badge">⏰ ${eq.heureSouhaitee}</span>` : ''}
+            </div>
             <div class="equipe-joueurs">
               ${eq.joueurs.length
                 ? eq.joueurs.map(j => `<span class="joueur-tag">${j}</span>`).join('')
