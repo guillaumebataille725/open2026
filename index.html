@@ -1204,7 +1204,7 @@ async function renderPoules(force=false) {
           html += `<div class="equipe-card" style="animation-delay:${i*.03}s">
             <div class="equipe-header">
               <span class="equipe-nom">${eq.nom}</span>
-              ${eq.heureSouhaitee ? `<span class="equipe-heure-badge">⏰ ${eq.heureSouhaitee}</span>` : ''}
+              ${eq.heureSouhaitee ? `<span class="equipe-heure-badge">⏰ Souhait : ${eq.heureSouhaitee}</span>` : ''}
             </div>
             <div class="equipe-joueurs">
               ${eq.joueurs.length
@@ -1244,7 +1244,7 @@ async function renderPoules(force=false) {
           html += `<div class="equipe-card" style="animation-delay:${i*.03}s">
             <div class="equipe-header">
               <span class="equipe-nom">${eq.nom}</span>
-              ${eq.heureSouhaitee ? `<span class="equipe-heure-badge">⏰ ${eq.heureSouhaitee}</span>` : ''}
+              ${eq.heureSouhaitee ? `<span class="equipe-heure-badge">⏰ Souhait : ${eq.heureSouhaitee}</span>` : ''}
             </div>
             <div class="equipe-joueurs">
               ${eq.joueurs.length
