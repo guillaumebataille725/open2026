@@ -1558,7 +1558,12 @@ document.getElementById('mobileLogo').src = document.querySelector('.logo-wrap i
 loadSection('calendrier');
 startAutoRefresh();
 // Taille du bouton selon l'état de l'auto-refresh
-if (!AUTO_REFRESH_ENABLED) document.getElementById('refreshBtn').classList.add('compact');
+window.addEventListener('DOMContentLoaded', function() {
+  if (!AUTO_REFRESH_ENABLED) {
+    var btn = document.getElementById('refreshBtn');
+    if (btn) btn.classList.add('compact');
+  }
+});
 </script>
 </body>
 </html>
