@@ -848,13 +848,13 @@ function switchSectionMobile(id) {
 
 // ── AUTO-REFRESH TOUTES LES 30s ──
 const AUTO_REFRESH_INTERVAL = 30; // secondes
+const AUTO_REFRESH_ENABLED = false;  // ← passer à true pour réactiver
 let countdownValue = AUTO_REFRESH_INTERVAL;
 let countdownTimer = null;
 let autoRefreshTimer = null;
 
 function startAutoRefresh() {
-  return; // ← RAFRAÎCHISSEMENT AUTO DÉSACTIVÉ
-  // Pour réactiver : supprimer ou commenter le "return;" ci-dessus
+  if (!AUTO_REFRESH_ENABLED) return; // ← passer AUTO_REFRESH_ENABLED à true pour réactiver
   document.getElementById('refreshBtn').classList.remove('compact');
   clearInterval(countdownTimer);
   clearTimeout(autoRefreshTimer);
@@ -1555,11 +1555,10 @@ buildNav();
 document.getElementById('mobileLogo').src = document.querySelector('.logo-wrap img').src;
 loadSection('calendrier');
 startAutoRefresh();
-// Applique la taille compacte si l'auto-refresh est désactivé (return en tête de startAutoRefresh)
+// Taille du bouton selon l'état de l'auto-refresh
 (function() {
   const btn = document.getElementById('refreshBtn');
-  const cd  = document.getElementById('refreshCountdown');
-  if (btn && cd && !cd.textContent) btn.classList.add('compact');
+  if (btn && !AUTO_REFRESH_ENABLED) btn.classList.add('compact');
 })();
 </script>
 </body>
