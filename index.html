@@ -157,6 +157,14 @@ nav::-webkit-scrollbar { display: none; }
   cursor: pointer; font-size: .9rem; transition: all .2s; line-height: 1;
   display: flex; align-items: center; gap: .35rem;
 }
+/* Bouton rétréci quand le rafraîchissement auto est désactivé */
+.refresh-btn.compact {
+  padding: .35rem .55rem;
+  font-size: .8rem;
+  border-radius: 5px;
+  opacity: .7;
+}
+.refresh-btn.compact:hover { opacity: 1; }
 .refresh-btn:hover { color: var(--yellow); border-color: var(--yellow); }
 .refresh-btn.spinning .refresh-icon { animation: spin 1s linear infinite; display: inline-block; }
 .refresh-countdown {
@@ -801,7 +809,7 @@ tbody td:not(:first-child):not(:nth-child(2)) { text-align: center; color: var(-
 </main>
 
 <script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyzQiIF6UlOEfetcd955Z5OpVoxKgxeE4tXRRNzqt798RH3GEU-dMRnYPPsSCSn8tov/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzvhH5gK8z5GAxXHHbHoqwOBdMr2Yxjka8rwlia-gIl0lRgtfTOefkzEbaZN9NGDy61/exec';
 
 const cache = {};
 let activeSection = 'calendrier';
@@ -838,15 +846,16 @@ function switchSectionMobile(id) {
   switchSection(id);
 }
 
-// ── AUTO-REFRESH TOUTES LES 180s ──
-const AUTO_REFRESH_INTERVAL = 180; // secondes
+// ── AUTO-REFRESH TOUTES LES 30s ──
+const AUTO_REFRESH_INTERVAL = 30; // secondes
 let countdownValue = AUTO_REFRESH_INTERVAL;
 let countdownTimer = null;
 let autoRefreshTimer = null;
 
 function startAutoRefresh() {
- 	 return; // ← RAFRAÎCHISSEMENT AUTO DÉSACTIVÉ
-  	// Pour réactiver : supprimer ou commenter le "return;" ci-dessus
+  return; // ← RAFRAÎCHISSEMENT AUTO DÉSACTIVÉ
+  // Pour réactiver : supprimer ou commenter le "return;" ci-dessus
+  document.getElementById('refreshBtn').classList.remove('compact');
   clearInterval(countdownTimer);
   clearTimeout(autoRefreshTimer);
   countdownValue = AUTO_REFRESH_INTERVAL;
@@ -1546,6 +1555,12 @@ buildNav();
 document.getElementById('mobileLogo').src = document.querySelector('.logo-wrap img').src;
 loadSection('calendrier');
 startAutoRefresh();
+// Applique la taille compacte si l'auto-refresh est désactivé (return en tête de startAutoRefresh)
+(function() {
+  const btn = document.getElementById('refreshBtn');
+  const cd  = document.getElementById('refreshCountdown');
+  if (btn && cd && !cd.textContent) btn.classList.add('compact');
+})();
 </script>
 </body>
 </html>
