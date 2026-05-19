@@ -845,6 +845,8 @@ let countdownTimer = null;
 let autoRefreshTimer = null;
 
 function startAutoRefresh() {
+ 	 return; // ← RAFRAÎCHISSEMENT AUTO DÉSACTIVÉ
+  	// Pour réactiver : supprimer ou commenter le "return;" ci-dessus
   clearInterval(countdownTimer);
   clearTimeout(autoRefreshTimer);
   countdownValue = AUTO_REFRESH_INTERVAL;
