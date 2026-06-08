@@ -2,6 +2,23 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
+  <!-- PWA : lien vers le manifest -->
+<link rel="manifest" href="manifest.json">
+ 
+<!-- iOS : active le mode plein écran quand ajouté à l'écran d'accueil -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+ 
+<!-- iOS : barre de statut transparente → règle le problème Dynamic Island -->
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+ 
+<!-- iOS : titre affiché sous l'icône sur le bureau -->
+<meta name="apple-mobile-web-app-title" content="BCH Open">
+ 
+<!-- iOS : icône sur l'écran d'accueil (à adapter si tu as un logo PNG) -->
+<link rel="apple-touch-icon" href="icon-192.png">
+ 
+<!-- Couleur de la barre de statut sur Android / Chrome -->
+<meta name="theme-color" content="#003087">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>BCH — OPEN 2026</title>
 
@@ -33,6 +50,17 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; font-size: 16px; }
 
+<script>
+  // Enregistrement du Service Worker (requis pour valider la PWA)
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/open2026/service-worker.js')
+        .then(reg => console.log('PWA Service Worker enregistré ✅', reg.scope))
+        .catch(err => console.warn('Service Worker non enregistré :', err));
+    });
+  }
+</script>
+  
 body {
   font-family: var(--font-body);
   background: var(--bg);
