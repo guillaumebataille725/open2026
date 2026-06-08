@@ -1,0 +1,25 @@
+{
+  "name": "BCH Open 2026",
+  "short_name": "BCH Open",
+  "description": "Tournoi 4x4 — Basket Club de La Hague",
+  "start_url": "/open2026/",
+  "scope": "/open2026/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#003087",
+  "theme_color": "#003087",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
